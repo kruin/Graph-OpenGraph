@@ -1,0 +1,8 @@
+V4.0 scope-freeze package created
+Full zip: Mapping_V4-26-04-29--v40-scope-freeze.zip
+MD-only zip: Mapping_V4-26-04-29--v40-all-md-sources.zip
+Embedded md-only zip: md/sources-md-zip/Mapping_V4-26-04-29--v40-all-md-sources.zip
+Markdown files included in md-only zip: 34
+Checks:
+- Mapping V3 regression checker: summary: 13 pass, 0 fail
+- MD folder check: PASS
