@@ -555,6 +555,38 @@
 - 2026-04-17: Removed the duplicate File menu checkbox for starting Load Graph in the Graph directory. The option remains available in the Load Graph dialog; the separate File menu item was redundant.
 # Changelog
 
+## v4.21.4 — Zinstype zichtbaar in toolbar
+
+- `Zinstype` direct naast `Structure type` gezet zodat het niet achter latere OpenGraph-knoppen verdwijnt.
+- Header-controls worden na het zetten van de graph opnieuw gesynchroniseerd.
+- `Language Tree / Phrase`: zinstype zichtbaar, Draw verborgen.
+- `Simple`/`Anafoor`/`Frame`: Draw zichtbaar, zinstype verborgen.
+
+## v4.21.3 — Language Tree UI source reset
+
+- Structure type is selector-only; it does not draw instantly.
+- Simple shows Draw and hides Zinstype.
+- Language Tree / Phrase keeps direct Zinstype draw.
+- Anafoor restored in the structure selector.
+- Frame remains projection-capable/open-tree projection.
+- Direct draw reloads the original `.graph`; missing source gives an explicit message.
+- Placement labels are visible on the lexical axis.
+
+## v4.21.2 — Language Tree selectie null-safe + DOS error logging
+
+- Fixed: directe zinstype-draw kon crashen wanneer `getSpecialNodeSelections()` nog `null` was.
+- `slot`/rootselectie is nu robuust wanneer nog geen speciale selectie is gestart.
+- OpenGraph drawing display fouten worden nu ook naar DOS/console (`System.err`) geschreven, inclusief stacktrace.
+- Dialogmelding blijft zichtbaar voor de gebruiker.
+
+## v4.21.1 — Language Tree zinstype direct draw + structure type in editor
+
+- Zinstype buttons now immediately execute OpenGraph Draw/Redraw for Language Tree / Phrase.
+- The local editor bar no longer has a Draw button; draw is triggered by Zinstype or Structure type selection.
+- Added `Structure type` selector directly in the graph editor window: Simple, Language Tree / Phrase, Frame.
+- Changing Structure type immediately redraws with that structure profile.
+- Zinstype choices force Structure type to Language Tree / Phrase and keep the selected button marked.
+
 ## 2026-05-02 — Mapping V4.16 morphology metadata validator
 
 ### Added
@@ -891,6 +923,30 @@ The stable baseline was kept only after repeated successful checks of:
 - Launchers call Java directly to avoid batch recursion.
 - Fixed OpenGraph menu descriptor comma that caused a null menu item.
 - Version metadata set to v4.20.4.
+
+## v4.21.0 — Language Tree tooltip + Phrase default
+
+- Zinstype hover tooltips now appear immediately.
+- OpenGraph defaults now select `Language Tree / Phrase` instead of `Frame`.
+- Clarified dialog labels: `Language Tree / Phrase` and `Frame (roles/functions)`.
+- Updated config defaults/user settings to `structure.type=2`.
+
+
+## v4.20.9 — Language Tree icon resource startup fix
+
+- Fixed startup crash when run.bat preferred precompiled `out\` classes but `out\images` was absent.
+- Menu/toolbar icon loading now tolerates missing classpath resources and falls back to root-level `images\`.
+- Packaged `out\images`, `out\help`, and `out\config` in the zip so the preferred `out\` launcher path is self-contained.
+- Version metadata set to `v4.20.9`.
+
+## v4.20.8 — Language Tree zinstype hover selection
+
+- Zinstype buttons are now persistent toggle buttons; the chosen profile remains visibly marked.
+- Detailed Language Tree placement-rule previews moved to hover tooltips on the zinstype buttons.
+- The drawing overlay is compact again: `LANGUAGE TREE` plus active `Zinstype`.
+- Topicalisation now reads the standard selected node and can preview a grouped topic such as `NP(de man)`.
+- Displacement convention clarified: rules attach to categorial nodes; lexical descendants are grouped for the lexical-axis label.
+- Version metadata set to `v4.20.8`.
 
 ## v4.20.7 — Language Tree zinstype profile preview
 

@@ -253,6 +253,47 @@ Deze map is documentatie/config-context. De runtime-code gebruikt de `.opn`, `.j
 - `meta-inf/2026-05-05-mapping-v4204-build-launcher-menu-fix.md`
 
 
+## v4.21.4
+
+- Patch manifest: `md/PATCH-MANIFEST-v4214-zinstype-visible-toolbar.md`.
+
+## v4.21.3
+
+- Patch manifest: `md/PATCH-MANIFEST-v4213-language-tree-ui-source-reset.md`.
+- Structure selector separated from draw; Simple/Frame/Anafoor use Draw, Language Tree uses Zinstype draw.
+
+## v4.21.2
+
+- Null-safe speciale selectie bij Language Tree direct draw.
+- OpenGraph foutmeldingen ook naar DOS/console.
+- Patch manifest: `md/PATCH-MANIFEST-v4212-language-tree-selection-nullsafe-dos-error.md`.
+
+## v4.21.1
+
+- Zinstypeknoppen voeren direct Draw/Redraw uit.
+- Draw-knop verwijderd uit de editorbalk.
+- Structure type staat direct in het edit-window: Simple, Language Tree / Phrase, Frame.
+- Zie `PATCH-MANIFEST-v4211-language-tree-direct-zinstype-draw.md`.
+
+## v4.21.0
+
+- Hoverteksten direct zichtbaar.
+- Default OpenGraph type: Language Tree / Phrase.
+- Zie `PATCH-MANIFEST-v4210-language-tree-tooltip-phrase-default.md`.
+
+
+## v4.20.9
+
+- Startup fix for missing icon resources when launching from precompiled `out\` classes.
+- `out\images`, `out\help`, and `out\config` included in clean zip.
+
+## v4.20.8
+
+- Persistent zinstype toggle-button selection.
+- Rule preview moved to hover tooltips.
+- Compact Language Tree overlay prevents preview overlap with the DS tree.
+- Topicalisation preview uses selected categorial nodes and grouped lexical labels such as `NP(de man)`.
+
 ## v4.20.7
 
 - `PATCH-MANIFEST-v4207-language-tree-zinstype-profile-preview.md`
