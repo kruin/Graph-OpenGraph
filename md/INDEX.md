@@ -311,3 +311,11 @@ Deze map is documentatie/config-context. De runtime-code gebruikt de `.opn`, `.j
 
 - `PATCH-MANIFEST-v4205-language-tree-slots-nary.md`
 - `meta-inf/2026-05-12-mapping-v4205-language-tree-slots-nary.md`
+
+- v4.22.3: projection profiles visible/editable in the OpenGraph header; see `PATCH-MANIFEST-v4223-projection-profile-ui.md`.
+- v4.22.2: projection profiles per structure type; see `sources/mapping-v4/opengraph-projection-profiles.md`.
+- PATCH-MANIFEST-v4224-language-tree-vcluster-ui.md
+- sources/mapping-v4/language-tree-vcluster-order.md
+
+- v4.22.6: Language Tree user settings button; see `PATCH-MANIFEST-v4226-language-tree-user-settings-button.md`.
+- v4.22.4: Language Tree V-cluster UI; see `PATCH-MANIFEST-v4224-language-tree-vcluster-ui.md`.

@@ -1,3 +1,43 @@
+# v4.22.7
+
+- Moved the Language Tree settings button to a fixed position directly after `Structure type`.
+- Renamed the header button to `LT Settings...` so it is easier to find.
+- The button remains visible only for `Language Tree / Phrase`.
+
+# v4.22.6 — Language Tree user settings button
+
+- Added a visible `Settings...` button in the OpenGraph header for `Language Tree / Phrase`.
+- The button opens a user-facing Language Tree settings dialog.
+- The dialog exposes V-cluster order and Language Tree projection captions/enabled flags.
+- `OK` applies the settings and saves the Language Tree profile in `config/opengraph_user.properties`.
+- The dialog does not force redraw; the next Language Tree zinstype/draw uses the saved settings.
+
+# v4.22.5 — Language Tree V-cluster in OpenGraphDraw UI
+
+- Projectieprofielen staan nu direct in de OpenGraph-header.
+- Per structure type zijn `show`, zijde-aan/uit en captions zichtbaar en wijzigbaar.
+- `Save profile` slaat het actieve projectieprofiel op in `config/opengraph_user.properties`.
+- Simple verbergt de projectieconfig; Language Tree / Phrase, Frame en Anafoor tonen deze wel.
+
+# v4.22.2 — projection profiles per structure type
+
+- Split projection configuration into structure-specific profiles: `simple`, `language`, `frame`, `anaphor`, and `default`.
+- Language Tree keeps left `LEX`, right `SYNT`, top `pm`, bottom `LF`.
+- Frame no longer inherits `SYNT`; default Frame profile is left `LEX`, right `ROLE`, top `FRAME`, bottom `SEM` disabled.
+- Anafoor default profile is left `LEX`, right `ANA`, top `pm`, bottom `LF` disabled.
+- Changing structure type now loads the matching configured projection profile.
+
+# v4.22.1 — projection config and test graph directory
+
+- Restored explicit projection side configuration in `config/opengraph_defaults.properties` and `config/opengraph_user.properties`.
+- Added projection captions: left `LEX`, right `SYNT`, top `pm`, bottom `LF`.
+- Projection-capable structure types now default to all four sides enabled: Language Tree / Phrase, Frame, Anafoor.
+- Simple keeps projections disabled.
+- OpenGraphDraw settings now shows projection captions next to projection enable/disable switches.
+- Language Tree graph hints no longer switch top/bottom projections off.
+- Added `config/opengraphed_user.properties` so graph loading defaults to `examples/graph`, not `config`.
+- In test-feature mode, loading from `config/` is not persisted as the default graph directory.
+
 
 ## v4.21.8 — Projection defaults restored
 
@@ -1010,3 +1050,17 @@ The stable baseline was kept only after repeated successful checks of:
 - The first real DS child row, for example `NP`/`VP`, starts one grid row lower, leaving room for topicalisation and V2 on the lexical axis.
 - Scope is limited to Language Tree draw; Simple, Anafoor, and Frame are not changed.
 
+
+## v4.22.5 — Language Tree V-cluster in OpenGraphDraw UI
+
+- Added Language Tree-only `V-cluster` controls in the header: `PV-VD` and `VD-PV`.
+- `PV-VD` draws the local V-cluster as `heeft gebeten`; `VD-PV` draws it as `gebeten heeft`.
+- Implemented as a local V-cluster branching/order choice; terminal-to-LEX projection remains unchanged.
+- The chosen V-cluster order is shown in the compact Language Tree overlay.
+- Added config keys `language.verbcluster.order` and `projection.profile.language.verbcluster.order`.
+
+## v4.22.5 — Language Tree V-cluster in OpenGraphDraw UI
+
+- Added a Language Tree tab to the OpenGraphDraw settings dialog.
+- The V-cluster order is now configurable both in the header and in the settings UI.
+- The dialog saves `language.verbcluster.order` and `projection.profile.language.verbcluster.order` for Language Tree.
