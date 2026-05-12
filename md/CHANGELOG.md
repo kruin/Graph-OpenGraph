@@ -975,3 +975,16 @@ The stable baseline was kept only after repeated successful checks of:
 - Language-tree type summary now reports n-ary allowed / lexical-axis placement.
 - Version metadata set to v4.20.5.
 - Regression status: Language Tree `3 pass, 0 fail`; Mapping V4 `53 pass, 0 fail`; Mapping V3 `13 pass, 0 fail`; MD folder `PASS`.
+
+## v4.21.7 — Hide moved base projection labels
+
+- Language Tree: moved surface items no longer duplicate their lexical text at the old base-axis position.
+- Topicalisatie/Stellend: the moved categorial phrase text is shown at the slot, while its original projection text is hidden.
+- V2 profiles: the finite verb terminal is shown at the V2 position, while its original projection text is hidden.
+
+## v4.21.6 — Language Tree placement rules revision
+
+- Revised topicalisation rule: topicalisation now requires a categorical selected node and renders its bundled lexical phrase on `slot1`.
+- Revised V2 rule: V2 now renders the finite verb terminal, e.g. `heeft`, on the surface axis instead of rendering the category-level label `PV → FIN`.
+- Ja/nee questions now show the finite verb as first visible material on the lexical axis.
+- Bijzin keeps the finite verb in basis order and renders `(om)dat` in `slot0`.
