@@ -1,3 +1,10 @@
+# v4.22.8 — prune docs, examples/opn and tools
+
+- Grote historische `.md`-set gesnoeid.
+- Oude Mapping V3/V4 regressievoorbeelden uit `examples/opn` verwijderd.
+- Oude Mapping V3/V4 regressietools uit `tools` verwijderd.
+- Actuele Language Tree documentatie en user-facing voorbeelden behouden.
+
 # v4.22.7
 
 - Moved the Language Tree settings button to a fixed position directly after `Structure type`.
