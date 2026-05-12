@@ -1,3 +1,11 @@
+
+## v4.21.8 — Projection defaults restored
+
+- Restored default projection configuration: left `LEX`, right `SYNT`, bottom `LF`, top `pm`.
+- Projection-capable structures now enable all four projection sides by default.
+- Simple tree still suppresses projections.
+- Side captions remain visible when enabled, also for placeholder sides such as top `pm`.
+
 ## 2026-05-03 — Mapping V4.20.1 Language Tree OPN open-grid fix
 
 ### Fixed
@@ -988,3 +996,17 @@ The stable baseline was kept only after repeated successful checks of:
 - Revised V2 rule: V2 now renders the finite verb terminal, e.g. `heeft`, on the surface axis instead of rendering the category-level label `PV → FIN`.
 - Ja/nee questions now show the finite verb as first visible material on the lexical axis.
 - Bijzin keeps the finite verb in basis order and renders `(om)dat` in `slot0`.
+
+## v4.21.9 — Language Tree FIN half-row
+
+- Moved the FIN/V2 surface-axis label to a half-row below slot1 instead of a full grid row.
+- Prevents FIN from lining up with DS child rows such as the first NP/VP row under S.
+- Keeps FIN as an axis position, not as a DS node row.
+## v4.22.0 — Dutch Language Tree root branch spacing
+
+- Replaced the temporary FIN half-row convention with a structural spacing convention for Dutch Language Tree / Phrase.
+- In Language Tree draw, the first branching below the DS root is now one grid row longer.
+- `slot0` remains above `S`; `slot1` remains on `S`; `FIN/V2` now uses the normal full grid row below `slot1`.
+- The first real DS child row, for example `NP`/`VP`, starts one grid row lower, leaving room for topicalisation and V2 on the lexical axis.
+- Scope is limited to Language Tree draw; Simple, Anafoor, and Frame are not changed.
+

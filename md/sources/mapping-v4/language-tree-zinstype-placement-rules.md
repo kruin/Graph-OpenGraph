@@ -76,3 +76,16 @@ RestPlacement: DS_ORDER_MINUS_MOVED
 ```
 
 Important: do not create `slot0` or `slot1` as graph nodes. They remain virtual lexical-axis slots.
+## v4.22.0 layout note — ruimte voor topicalisatie en V2
+
+Voor Dutch Language Tree / Phrase wordt de eerste vertakking onder de DS-root één gridrij langer getekend. Daardoor ontstaat op de lexicale as ruimte voor de oppervlakteposities zonder dat FIN op dezelfde hoogte komt als de eerste DS-kinderen.
+
+```text
+slot0  = COMP, boven S
+slot1  = voorveld/topicalisatie, op S-hoogte
+FIN    = persoonsvorm-eindknoop, één normale gridrij onder slot1
+DS     = eerste echte DS-kindrij één gridrij lager
+```
+
+Topicalisatie blijft aangrijpen op een categoriale knoop, bijvoorbeeld `NP(de man)`. De V2-regel blijft aangrijpen op de terminale persoonsvorm, bijvoorbeeld `heeft`.
+
