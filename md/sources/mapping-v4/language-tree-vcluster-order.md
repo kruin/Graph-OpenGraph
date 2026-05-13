@@ -16,11 +16,11 @@ This is handled as a local V-cluster drawing/order choice, not as a projection t
 When `Structure type = Language Tree / Phrase`, the OpenGraph header shows:
 
 ```text
-V-cluster: [PV-VD] [VD-PV]
+V-cluster: [pv-VD] [VD-pv]
 ```
 
-- `PV-VD` = `heeft gebeten`
-- `VD-PV` = `gebeten heeft`
+- `pv-VD` = `heeft gebeten`
+- `VD-pv` = `gebeten heeft`
 
 Changing the button redraws from the original `.graph`.
 
@@ -30,15 +30,15 @@ For a local V-cluster:
 
 ```text
 V
-├── PV/heeft
+├── pv/heeft
 └── VD/gebeten
 ```
 
 OpenGraph draw may order the two child subtrees as:
 
 ```text
-PV-VD: PV first, VD second
-VD-PV: VD first, PV second
+pv-VD: pv first, VD second
+VD-pv: VD first, pv second
 ```
 
 The source graph is not mutated. The LEX projection mechanism stays:

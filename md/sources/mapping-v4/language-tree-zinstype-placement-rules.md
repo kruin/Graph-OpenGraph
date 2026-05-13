@@ -23,11 +23,11 @@ Suggested buttons:
 
 Each button applies a complete profile.
 
-- `Bijzin`: fill/use `slot0` for C; keep PV in base V position.
-- `Stellend`: place subject or selected topic in `slot1`; place PV immediately after `slot1`.
-- `Ja/nee-vraag`: leave `slot1` empty; place PV in first visible position.
-- `WH-vraag`: place WH phrase in `slot1`; place PV immediately after `slot1`.
-- `Topicalisatie`: place selected constituent in `slot1`; place PV immediately after `slot1`.
+- `Bijzin`: fill/use `slot0` for C; keep pv in base V position.
+- `Stellend`: place subject or selected topic in `slot1`; place pv immediately after `slot1`.
+- `Ja/nee-vraag`: leave `slot1` empty; place pv in first visible position.
+- `WH-vraag`: place WH phrase in `slot1`; place pv immediately after `slot1`.
+- `Topicalisatie`: place selected constituent in `slot1`; place pv immediately after `slot1`.
 - `Basis`: clear derived placements; show the DS lexical projection order.
 
 Advantage: fastest for classroom/test use.
@@ -39,8 +39,8 @@ Keep `Zinstype` as a container but expose individual steps.
 
 - `C → slot0`
 - `Topic/WH → slot1`
-- `PV → FIN`
-- `PV blijft`
+- `pv → FIN`
+- `pv blijft`
 - `Reset plaatsing`
 
 Advantage: didactically explicit; good for debugging.
@@ -54,7 +54,7 @@ Example for `WH-vraag`:
 
 ```text
 slot1 = WH
-PV = after(slot1)
+pv = after(slot1)
 Rest = DS order minus moved items
 ```
 

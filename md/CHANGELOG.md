@@ -1,3 +1,15 @@
+
+## v4.23.0
+
+- Fixed remaining Language Tree V-cluster shift: toggling `pv-VD` / `VD-pv` now preserves the DS-root anchor and skips recentering for that toggle.
+- User-facing spelling remains `pv`, not `PV`.
+
+# v4.22.9 — Stabilize V-cluster redraw and pv spelling
+
+- Fixed Language Tree V-cluster redraw shifting: switching `pv-VD` and `VD-pv` now keeps the surrounding tree/grid anchor stable.
+- Added a stable V-cluster bounding box so the visual child order changes without changing the parent/root normalization.
+- Changed user-facing labels from `pv` to `pv`; config values remain `pv_vd` and `vd_pv`.
+
 # v4.22.8 — prune docs, examples/opn and tools
 
 - Grote historische `.md`-set gesnoeid.
@@ -1040,7 +1052,7 @@ The stable baseline was kept only after repeated successful checks of:
 ## v4.21.6 — Language Tree placement rules revision
 
 - Revised topicalisation rule: topicalisation now requires a categorical selected node and renders its bundled lexical phrase on `slot1`.
-- Revised V2 rule: V2 now renders the finite verb terminal, e.g. `heeft`, on the surface axis instead of rendering the category-level label `PV → FIN`.
+- Revised V2 rule: V2 now renders the finite verb terminal, e.g. `heeft`, on the surface axis instead of rendering the category-level label `pv → FIN`.
 - Ja/nee questions now show the finite verb as first visible material on the lexical axis.
 - Bijzin keeps the finite verb in basis order and renders `(om)dat` in `slot0`.
 
@@ -1060,8 +1072,8 @@ The stable baseline was kept only after repeated successful checks of:
 
 ## v4.22.5 — Language Tree V-cluster in OpenGraphDraw UI
 
-- Added Language Tree-only `V-cluster` controls in the header: `PV-VD` and `VD-PV`.
-- `PV-VD` draws the local V-cluster as `heeft gebeten`; `VD-PV` draws it as `gebeten heeft`.
+- Added Language Tree-only `V-cluster` controls in the header: `pv-VD` and `VD-pv`.
+- `pv-VD` draws the local V-cluster as `heeft gebeten`; `VD-pv` draws it as `gebeten heeft`.
 - Implemented as a local V-cluster branching/order choice; terminal-to-LEX projection remains unchanged.
 - The chosen V-cluster order is shown in the compact Language Tree overlay.
 - Added config keys `language.verbcluster.order` and `projection.profile.language.verbcluster.order`.
