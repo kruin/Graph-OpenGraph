@@ -1,3 +1,19 @@
+- Lowered the Language Tree `VP` one extra grid row in the classic `S -> NP VP` split so `VP` no longer lands on the same row as the adjacent NP terminal.
+# v4.23.2 — Language Tree zinstype anchor stability
+
+- Fixed `Bijzin` shifting the Language Tree one grid column to the right.
+- Zinstype redraws now preserve the current DS-root anchor when an OpenGraph draw is already present.
+- First draw from a raw `.graph` still uses normal centering.
+
+## v4.23.1 — compact Language Tree header
+
+- Removed the fixed `OpenGraph:` prefix from the graph editor header.
+- Replaced `Structure type:` with compact `Type:`.
+- Shortened `Language Tree / Phrase` in the header combobox to `LT`, with full hover text.
+- Shortened `LT Settings...` to `Settings...`.
+- Shortened Language Tree header labels: `Zinstype:` → `Zin:`, `Stellend` → `Stell.`, `Topicalisatie` → `Topic`, `V-cluster:` → `V:`.
+- No draw/projection behavior changed.
+
 
 ## v4.23.0
 

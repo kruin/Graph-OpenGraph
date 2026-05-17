@@ -1,4 +1,5 @@
 # Documentation index
+- `PATCH-MANIFEST-v4232-language-tree-zinstype-anchor.md` — DS-root blijft vast bij Language Tree-zinstypewissel; `Bijzin` schuift niet meer één gridpositie naar rechts.
 
 - `PATCH-MANIFEST-v4230-vcluster-anchor-stability.md` — V-cluster root-anchor stabiliteit; wisselen `pv-VD`/`VD-pv` verschuift de DS-boom niet.
 ## Actueel
