@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Main-Class: OpenGraphEdFrame
+Implementation-Title: OpenGraphEd
+Implementation-Version: v4.23.9
+Created-By: OpenGraphEd build
+

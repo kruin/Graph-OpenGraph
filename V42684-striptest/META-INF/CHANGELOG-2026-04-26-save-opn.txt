@@ -1,0 +1,7 @@
+2026-04-26 — Save OPN visible/active and roundtrip baseline
+
+- File → Save OPN is visible as a normal File-menu action.
+- Save OPN is enabled when a graph/OPN window is active.
+- Save OPN for an already loaded .opn copies the source .opn as roundtrip baseline, preserving MAPPING_V3 sections.
+- Save OPN for a non-OPN graph writes a minimal pipe-safe STRUCTURE_NODES / STRUCTURE_EDGES .opn.
+- META-INF / meta-inf are included inside the OpenGraphEd project folder, not beside it.
