@@ -4,71 +4,53 @@ cd /d "%~dp0"
 
 set "OUTDIR=out"
 set "DISTDIR=dist"
+set "TMPDIR=.build-tmp"
 set "ROOT_JAR=OpenGraphEd.jar"
 set "FALLBACK_JAR=OpenGraphEd.new.jar"
 set "DIST_JAR=%DISTDIR%\OpenGraphEd.jar"
-set "TEMP_JAR=%DISTDIR%\OpenGraphEd.build.jar"
-set "SOURCES_FILE=%TEMP%\OpenGraphEd_sources_%RANDOM%%RANDOM%.txt"
-set "MANIFEST_FILE=%TEMP%\OpenGraphEd_manifest_%RANDOM%%RANDOM%.txt"
+set "TEMP_JAR=%TMPDIR%\OpenGraphEd.build.jar"
+set "SOURCES_FILE=%TMPDIR%\OpenGraphEd_sources.txt"
+set "MANIFEST_FILE=%TMPDIR%\OpenGraphEd_manifest.mf"
 
 if not exist "%OUTDIR%" mkdir "%OUTDIR%"
-if errorlevel 1 (
-    echo.
-    echo BUILD FAILED
-    echo Could not create %OUTDIR%\
-    exit /b 1
-)
-
+if errorlevel 1 ( echo. & echo BUILD FAILED & echo Could not create %OUTDIR%\ & exit /b 1 )
 if not exist "%DISTDIR%" mkdir "%DISTDIR%"
-if errorlevel 1 (
-    echo.
-    echo BUILD FAILED
-    echo Could not create %DISTDIR%\
-    exit /b 1
-)
+if errorlevel 1 ( echo. & echo BUILD FAILED & echo Could not create %DISTDIR%\ & exit /b 1 )
+if not exist "%TMPDIR%" mkdir "%TMPDIR%"
+if errorlevel 1 ( echo. & echo BUILD FAILED & echo Could not create local build temp directory: %TMPDIR%\ & exit /b 1 )
 
-if exist "%ROOT_JAR%\NUL" (
-    echo.
-    echo BUILD FAILED
-    echo %ROOT_JAR% exists as a DIRECTORY, not as a file.
-    echo Rename or remove that directory first.
-    exit /b 1
-)
-
-if exist "%FALLBACK_JAR%\NUL" (
-    echo.
-    echo BUILD FAILED
-    echo %FALLBACK_JAR% exists as a DIRECTORY, not as a file.
-    echo Rename or remove that directory first.
-    exit /b 1
-)
-
-if exist "%DIST_JAR%\NUL" (
-    echo.
-    echo BUILD FAILED
-    echo %DIST_JAR% exists as a DIRECTORY, not as a file.
-    echo Rename or remove that directory first.
-    exit /b 1
-)
+if exist "%ROOT_JAR%\NUL" ( echo. & echo BUILD FAILED & echo %ROOT_JAR% exists as a DIRECTORY, not as a file. & exit /b 1 )
+if exist "%FALLBACK_JAR%\NUL" ( echo. & echo BUILD FAILED & echo %FALLBACK_JAR% exists as a DIRECTORY, not as a file. & exit /b 1 )
+if exist "%DIST_JAR%\NUL" ( echo. & echo BUILD FAILED & echo %DIST_JAR% exists as a DIRECTORY, not as a file. & exit /b 1 )
 
 if exist "%TEMP_JAR%" del /q "%TEMP_JAR%" >nul 2>nul
 if exist "%DIST_JAR%" del /q "%DIST_JAR%" >nul 2>nul
 if exist "%SOURCES_FILE%" del /q "%SOURCES_FILE%" >nul 2>nul
 if exist "%MANIFEST_FILE%" del /q "%MANIFEST_FILE%" >nul 2>nul
 
-(
-  for %%F in (*.java) do @echo %%F
-  if exist dataStructure for /r dataStructure %%F in (*.java) do @echo %%F
-  if exist graphException for /r graphException %%F in (*.java) do @echo %%F
-  if exist graphStructure for /r graphStructure %%F in (*.java) do @echo %%F
-  if exist operation for /r operation %%F in (*.java) do @echo %%F
-  if exist userInterface for /r userInterface %%F in (*.java) do @echo %%F
-) > "%SOURCES_FILE%"
+rem Build a javac @argfile with relative paths and forward slashes.
+rem Do NOT write quoted absolute Windows paths here: javac treats backslashes
+rem in @argfiles as escapes, which turns C:\dir\File.java into C:dirFile.java.
+type nul > "%SOURCES_FILE%"
+if errorlevel 1 ( echo. & echo BUILD FAILED & echo Could not create source list in %SOURCES_FILE%. & exit /b 1 )
 
-if not exist "%SOURCES_FILE%" (
+for %%F in (*.java) do call :append_source "%%F"
+if exist dataStructure for /r dataStructure %%F in (*.java) do call :append_source "%%F"
+if exist graphException for /r graphException %%F in (*.java) do call :append_source "%%F"
+if exist graphStructure for /r graphStructure %%F in (*.java) do call :append_source "%%F"
+if exist operation for /r operation %%F in (*.java) do call :append_source "%%F"
+if exist tools for /r tools %%F in (*.java) do call :append_source "%%F"
+if exist userInterface for /r userInterface %%F in (*.java) do call :append_source "%%F"
+
+if not exist "%SOURCES_FILE%" ( echo. & echo BUILD FAILED & echo Could not create source list in %SOURCES_FILE%. & exit /b 1 )
+for %%A in ("%SOURCES_FILE%") do if %%~zA EQU 0 ( echo. & echo BUILD FAILED & echo Source list is empty. & exit /b 1 )
+
+where javac >nul 2>nul
+if errorlevel 1 (
     echo.
     echo BUILD FAILED
-    echo Could not create source list.
+    echo javac was not found. Install a JDK and make sure javac is on PATH.
+    echo A JRE is not enough for build.bat.
     exit /b 1
 )
 
@@ -79,8 +61,14 @@ if exist images xcopy images "%OUTDIR%\images" /E /I /Y >nul
 if exist help xcopy help "%OUTDIR%\help" /E /I /Y >nul
 if exist config xcopy config "%OUTDIR%\config" /E /I /Y >nul
 
-> "%MANIFEST_FILE%" echo Main-Class: OpenGraphEdFrame
+> "%MANIFEST_FILE%" echo Manifest-Version: 1.0
+>> "%MANIFEST_FILE%" echo Main-Class: OpenGraphEdFrame
+>> "%MANIFEST_FILE%" echo Implementation-Title: OpenGraphEd
+>> "%MANIFEST_FILE%" echo Implementation-Version: v4.31.9-grid-preview-confirm
 >> "%MANIFEST_FILE%" echo.
+
+where jar >nul 2>nul
+if errorlevel 1 ( echo. & echo JAR BUILD FAILED & echo jar was not found. Install a JDK and make sure jar is on PATH. & exit /b 1 )
 
 jar cfm "%TEMP_JAR%" "%MANIFEST_FILE%" -C "%OUTDIR%" .
 if errorlevel 1 goto :jar_failed
@@ -101,25 +89,27 @@ if errorlevel 1 (
     call :try_copy_with_retry "%DIST_JAR%" "%FALLBACK_JAR%"
     if errorlevel 1 (
         echo Could not create %FALLBACK_JAR% in the project root either.
-        echo.
-        echo BUILD OK
-        echo Use the app normally via OpenGraphEd.bat or run.bat.
-        echo For packaging/distribution, use this jar:
-        echo   %DIST_JAR%
+        echo BUILD OK. Use %DIST_JAR%.
         goto :cleanup_success
     )
     echo Project-root fallback jar created: %FALLBACK_JAR%
-    echo.
-    echo BUILD OK
-    echo Use the app normally via OpenGraphEd.bat or run.bat.
-    echo For packaging/distribution, use this jar:
-    echo   %DIST_JAR%
     goto :cleanup_success
 )
-
 echo Project-root jar refreshed: %ROOT_JAR%
-
 goto :cleanup_success
+
+:append_source
+rem Convert each source path to a relative path with forward slashes for javac @argfile.
+rem Delayed expansion is required here. Plain %%P:%%CD%% substitution can be
+rem parsed incorrectly by cmd.exe and may leak tokens such as CD into the argfile.
+setlocal EnableDelayedExpansion
+set "P=%~1"
+set "ROOT=%CD%\"
+set "P=!P:%ROOT%=!"
+set "P=!P:\=/!"
+>> "%SOURCES_FILE%" echo "!P!"
+endlocal
+exit /b 0
 
 :safe_replace
 set "SRC=%~1"
@@ -139,7 +129,7 @@ copy /Y "%SRC%" "%DST%" >nul 2>nul
 if not errorlevel 1 exit /b 0
 if %TRY_COUNT% GEQ 5 exit /b 1
 timeout /t 1 /nobreak >nul
- goto :try_copy_loop
+goto :try_copy_loop
 
 :build_failed
 echo.
@@ -163,11 +153,10 @@ goto :cleanup_error
 if exist "%TEMP_JAR%" del /q "%TEMP_JAR%" >nul 2>nul
 if exist "%SOURCES_FILE%" del /q "%SOURCES_FILE%" >nul 2>nul
 if exist "%MANIFEST_FILE%" del /q "%MANIFEST_FILE%" >nul 2>nul
-
+if exist "%TMPDIR%" rmdir "%TMPDIR%" >nul 2>nul
 echo.
 echo Note: OpenGraphEd.bat prefers freshly compiled classes in %OUTDIR%\
-echo and does not depend on %ROOT_JAR% for normal local use.
-
+echo and falls back to dist\OpenGraphEd.jar or OpenGraphEd.jar.
 endlocal
 exit /b 0
 
@@ -175,5 +164,6 @@ exit /b 0
 if exist "%TEMP_JAR%" del /q "%TEMP_JAR%" >nul 2>nul
 if exist "%SOURCES_FILE%" del /q "%SOURCES_FILE%" >nul 2>nul
 if exist "%MANIFEST_FILE%" del /q "%MANIFEST_FILE%" >nul 2>nul
+if exist "%TMPDIR%" rmdir "%TMPDIR%" >nul 2>nul
 endlocal
 exit /b 1
