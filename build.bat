@@ -12,6 +12,9 @@ set "TEMP_JAR=%TMPDIR%\OpenGraphEd.build.jar"
 set "SOURCES_FILE=%TMPDIR%\OpenGraphEd_sources.txt"
 set "MANIFEST_FILE=%TMPDIR%\OpenGraphEd_manifest.mf"
 
+rem v4336: build cleanly so removed classes such as GreedyGrowthWindow do not remain in out/.
+if exist "%OUTDIR%" rmdir /S /Q "%OUTDIR%" >nul 2>nul
+
 if not exist "%OUTDIR%" mkdir "%OUTDIR%"
 if errorlevel 1 ( echo. & echo BUILD FAILED & echo Could not create %OUTDIR%\ & exit /b 1 )
 if not exist "%DISTDIR%" mkdir "%DISTDIR%"
@@ -64,7 +67,7 @@ if exist config xcopy config "%OUTDIR%\config" /E /I /Y >nul
 > "%MANIFEST_FILE%" echo Manifest-Version: 1.0
 >> "%MANIFEST_FILE%" echo Main-Class: OpenGraphEdFrame
 >> "%MANIFEST_FILE%" echo Implementation-Title: OpenGraphEd
->> "%MANIFEST_FILE%" echo Implementation-Version: v4.31.9-grid-preview-confirm
+>> "%MANIFEST_FILE%" echo Implementation-Version: v4.33.9-greedy-grow-json-export
 >> "%MANIFEST_FILE%" echo.
 
 where jar >nul 2>nul
