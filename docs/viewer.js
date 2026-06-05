@@ -67,7 +67,7 @@
     demo: null,
     originalDemo: null,
     lastGenerateReport: null,
-    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Desktop: acties rechtsboven. Mobiel: gebruik de bottom bar; Genereer layout springt automatisch naar het eindbeeld.' },
+    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Lijnen staan standaard aan; de actuele groeistap wordt als groeilijn gemarkeerd.' },
     mobileSheetOpen: false,
     step: 0,
     controlsReady: false,
@@ -88,7 +88,7 @@
       growGrid: true,
       showGrid: true,
       showLabels: true,
-      showEdges: false,
+      showEdges: true,
       showAxes: true,
       diagonalFree: 'none',
       showConflicts: true,
@@ -262,6 +262,42 @@
 
   function hasInferredEdgesVisible() {
     return !!state.view.showEdges && Array.isArray(state.demo?.edges) && state.demo.edges.length === 0;
+  }
+
+  function currentGrowthSegment() {
+    if (!state.demo || state.step <= 0) return null;
+    const nodes = orderedNodes(state.demo)
+      .filter(n => toNumber(n.step ?? n.order, 0) <= state.step)
+      .filter(n => limitedNodesForMax().some(limited => limited.id === n.id));
+    if (nodes.length < 2) return null;
+    const current = nodes[nodes.length - 1];
+    const previous = nodes[nodes.length - 2];
+    return { previous, current, step: toNumber(current.step ?? current.order, state.step) };
+  }
+
+  function growthNarrative() {
+    if (!state.view.showEdges) return 'Groeilijnen uit: alleen vrije bronknopen zichtbaar.';
+    const segment = currentGrowthSegment();
+    if (!segment) return 'Startpunt: de eerste vrije knoop is zichtbaar.';
+    const from = String(segment.previous.label ?? segment.previous.id);
+    const to = String(segment.current.label ?? segment.current.id);
+    return `Groei: stap ${segment.step} voegt ${to} toe via een lijn vanaf ${from}.`;
+  }
+
+  function buildSvgDefs() {
+    const defs = svgEl('defs');
+    const marker = svgEl('marker', {
+      id: 'growthArrow',
+      markerWidth: 8,
+      markerHeight: 8,
+      refX: 7.2,
+      refY: 4,
+      orient: 'auto',
+      markerUnits: 'strokeWidth'
+    });
+    marker.appendChild(svgEl('path', { d: 'M 0 0 L 8 4 L 0 8 z', class: 'growth-arrow' }));
+    defs.appendChild(marker);
+    return defs;
   }
 
   function configuredCellSize() {
@@ -838,7 +874,7 @@
       constraints: { hor_ver_free: true, diagonal_free: 'none' },
       greedy: { count: coords.length, config_count: coords.length, max, generation_max: coords.length, no_limit: noLimit, style: 'free-hor-ver-demo', rule: 'hor-ver-free' },
       grow: { interval_ms: 700, start_step: 0, auto_start: false, reveal_edges: 'when_both_nodes_visible', stop_at_end: true, loop: false, undo_redo_per_step: true, last_step_equals_static: true },
-      style: { node_radius: 6, show_labels: true, show_edges: false, auto_size: true, free_nodes: true, hor_ver_free: true },
+      style: { node_radius: 6, show_labels: true, show_edges: true, auto_size: true, free_nodes: true, hor_ver_free: true },
       nodes, edges, steps
     };
   }
@@ -881,7 +917,7 @@
     demo.grid.cell_width = toNumber(demo.grid.cell_width || demo.grid.step_x, 28);
     demo.grid.cell_height = toNumber(demo.grid.cell_height || demo.grid.step_y, demo.grid.cell_width);
     if (typeof demo.style.auto_size !== 'boolean') demo.style.auto_size = true;
-    if (typeof demo.style.show_edges !== 'boolean') demo.style.show_edges = false;
+    if (typeof demo.style.show_edges !== 'boolean') demo.style.show_edges = true;
     if (typeof demo.style.free_nodes !== 'boolean') demo.style.free_nodes = true;
     demo.constraints.diagonal_free = demoDiagonalFree(demo);
     demo.freedom.diagonal_free = demo.constraints.diagonal_free;
@@ -900,7 +936,7 @@
     state.view.growGrid = demo.grid?.grow_with_step !== false;
     state.view.showGrid = demo.grid?.show_grid !== false;
     state.view.showLabels = demo.style?.show_labels !== false;
-    state.view.showEdges = demo.style?.show_edges === true;
+    state.view.showEdges = true;
     state.view.showAxes = demo.grid?.show_axes_through_origin !== false;
     state.view.diagonalFree = demoDiagonalFree(demo);
     state.view.showConflicts = true;
@@ -971,6 +1007,7 @@
     state.step = clamp(state.step, 0, max);
 
     els.svg.replaceChildren();
+    els.svg.appendChild(buildSvgDefs());
     const nodes = visibleNodes();
     const nodeIds = new Set(nodes.map(n => n.id));
     const edges = visibleEdges(nodeIds);
@@ -991,7 +1028,14 @@
       if (!a || !b) continue;
       const p1 = nodePosition(a);
       const p2 = nodePosition(b);
-      edgeG.appendChild(svgEl('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: edge.inferred ? 'edge inferred-edge' : 'edge' }));
+      const edgeStep = toNumber(edge.step ?? edge.order, 0);
+      const edgeClasses = ['edge', 'growth-edge', edge.inferred ? 'inferred-edge' : 'json-edge'];
+      if (state.step > 0 && edgeStep === state.step) edgeClasses.push('current-growth-edge');
+      const lineAttrs = { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: edgeClasses.join(' ') };
+      if (state.step > 0 && edgeStep === state.step) lineAttrs['marker-end'] = 'url(#growthArrow)';
+      const line = svgEl('line', lineAttrs);
+      line.appendChild(svgEl('title', {}, `${edge.inferred ? 'Afgeleide groeilijn' : 'JSON-lijn'} · stap ${edgeStep}: ${edge.from} → ${edge.to}`));
+      edgeG.appendChild(line);
     }
     els.svg.appendChild(edgeG);
 
@@ -1058,14 +1102,15 @@
     els.stepRange.max = String(max);
     els.stepRange.value = String(state.step);
     els.stepHeading.textContent = `Stap ${state.step}`;
-    els.stepText.textContent = step?.text || (state.step === max ? 'Eindbeeld: gelijk aan de statische Greedy-weergave.' : 'Geen staptekst beschikbaar.');
+    const baseStepText = step?.text || (state.step === max ? 'Eindbeeld: gelijk aan de statische Greedy-weergave.' : 'Geen staptekst beschikbaar.');
+    els.stepText.textContent = `${baseStepText} ${growthNarrative()}`;
     const count = visibleNodes().length;
     const total = totalNodes(demo);
     const limitText = state.view.noLimit ? `NoLimit: alle ${total}` : `Max ${state.view.maxNodes}`;
     const sizeText = state.view.autoSize
       ? `auto-size · cel≈${Math.round(state.computed.apparentCellPx)}px · knoop≈${Math.round(state.computed.nodeRadius * state.computed.apparentCellPx / state.computed.cellSize)}px`
       : `manual · cel ${state.view.cellSize} · knoop ${state.view.nodeRadius}`;
-    const topologyText = state.view.showEdges ? (hasInferredEdgesVisible() ? 'groeilijnen afgeleid' : 'JSON-lijnen aan') : 'vrije bronknopen';
+    const topologyText = state.view.showEdges ? (hasInferredEdgesVisible() ? 'groeilijnen afgeleid · actuele groeilijn gemarkeerd' : 'JSON-lijnen aan · actuele groeilijn gemarkeerd') : 'lijnen uit · vrije bronknopen';
     const visibleConstraints = constraintReport(visibleNodes());
     const allConstraints = constraintReport(limitedNodesForMax());
     const constraintText = constraintShortText(allConstraints);
@@ -1204,7 +1249,7 @@
     state.view.growGrid = !!els.growGridInput.checked;
     state.view.showGrid = !!els.showGridInput.checked;
     state.view.showLabels = !!els.showLabelsInput.checked;
-    state.view.showEdges = els.showEdgesInput ? !!els.showEdgesInput.checked : false;
+    state.view.showEdges = els.showEdgesInput ? !!els.showEdgesInput.checked : true;
     state.view.showAxes = !!els.showAxesInput.checked;
     state.view.diagonalFree = els.diagonalFreeSelect ? normalizeDiagonalFree(els.diagonalFreeSelect.value) : 'none';
     state.view.showConflicts = els.showConflictsInput ? !!els.showConflictsInput.checked : true;

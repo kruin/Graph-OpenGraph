@@ -237,6 +237,9 @@ button:disabled { opacity: 0.45; }
 .grid-line.major { stroke: var(--grid-major); stroke-width: 1.2; }
 .axis { stroke: var(--line); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
 .edge { stroke: var(--edge); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.growth-edge { opacity: 0.78; }
+.current-growth-edge { stroke: var(--current); stroke-width: 3.4; opacity: 1; }
+.growth-arrow { fill: var(--current); stroke: none; }
 .node { fill: var(--node); stroke: var(--node-line); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
 .node.conflict-node { stroke: var(--conflict); stroke-width: 2.4; }
 .conflict-ring { fill: none; stroke: var(--conflict); stroke-width: 2; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; pointer-events: none; }
@@ -277,11 +280,11 @@ button:disabled { opacity: 0.45; }
 .node-circles { pointer-events: none; }
 .control-grid input:disabled { opacity: 0.55; }
 
-/* v4346: edges are optional; free-node mode is default. */
+/* v4353: groeilijnen staan standaard aan; vrije bronplaatsing blijft de basis. */
 .node-highlights { pointer-events: none; }
 
 
-/* v4346: inferred growth lines are visual aids only. */
+/* v4353: afgeleide groeilijnen ondersteunen het groeiconcept; ze veranderen de plaatsing niet. */
 .inferred-edge {
   stroke-dasharray: 5 5;
   opacity: 0.72;

@@ -53,7 +53,7 @@
     "node_radius": 6,
     "show_labels": true,
     "auto_size": true,
-    "show_edges": false,
+    "show_edges": true,
     "free_nodes": true,
     "hor_ver_free": true
   },

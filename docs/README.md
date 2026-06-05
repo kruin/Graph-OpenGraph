@@ -1,8 +1,8 @@
-# JAN Open Notation Viewer — PWA v4352
+# JAN Open Notation Viewer — PWA v4353
 
 Mobiele/desktop PWA-viewer voor **JAN/Open Notation**.
 
-## Nieuw in v4352
+## Nieuw in v4353
 
 - Desktop-toolbar is gesplitst: navigatie links, bestand/Greedy-acties rechts.
 - Mobile gebruikt een vaste bottom bar: Vorige, Volgende, Genereer, Meer.
@@ -83,3 +83,11 @@ http://<pc-ip>:8088
 - `JSON laden`: opent een eigen `*_grow_demo.json`, bijvoorbeeld uit OpenGraphEd via `Greedy → Export Greedy Grow JSON`.
 - `Lijnen tonen`: toont echte JSON-edges, of — als die ontbreken — afgeleide groeilijnen tussen opeenvolgende stappen.
 - `JAN-carousel openen`: opent de aparte uitleglaag met beelden en teksten.
+
+
+## v4353
+
+- Lijnen/groeilijnen staan standaard aan.
+- De actuele groeistap wordt visueel gemarkeerd met een dikkere lijn en pijlpunt.
+- Als de JSON geen `edges[]` bevat, toont de viewer afgeleide groeilijnen tussen opeenvolgende stappen.
+- De staptekst vermeldt nu welke knoop in de huidige groeistap wordt toegevoegd.

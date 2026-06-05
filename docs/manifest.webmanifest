@@ -1,7 +1,7 @@
 {
   "name": "JAN Open Notation Viewer",
   "short_name": "JAN Viewer",
-  "description": "Mobiele demo-viewer voor JAN Open Notation: grow-weergave, browser-Greedy-generator, diagonal-free conflictcontrole, responsive bediening en JAN-carousel.",
+  "description": "Mobiele demo-viewer voor JAN Open Notation: grow-weergave met groeilijnen standaard aan, browser-Greedy-generator, diagonal-free conflictcontrole, responsive bediening en JAN-carousel.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
