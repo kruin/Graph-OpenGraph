@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jan-opennotation-viewer-v4351';
+const CACHE_NAME = 'jan-opennotation-viewer-v4352';
 
 const ASSETS = [
   './',

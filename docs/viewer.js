@@ -43,6 +43,21 @@
     topGenerateLayoutButton: document.getElementById('topGenerateLayoutButton'),
     topRestoreLayoutButton: document.getElementById('topRestoreLayoutButton'),
     topDownloadJsonButton: document.getElementById('topDownloadJsonButton'),
+    mobilePrevButton: document.getElementById('mobilePrevButton'),
+    mobileNextButton: document.getElementById('mobileNextButton'),
+    mobileGenerateLayoutButton: document.getElementById('mobileGenerateLayoutButton'),
+    mobileMenuButton: document.getElementById('mobileMenuButton'),
+    mobileSheet: document.getElementById('mobileSheet'),
+    mobileSheetBackdrop: document.getElementById('mobileSheetBackdrop'),
+    mobileSheetCloseButton: document.getElementById('mobileSheetCloseButton'),
+    mobileFirstButton: document.getElementById('mobileFirstButton'),
+    mobileLastButton: document.getElementById('mobileLastButton'),
+    mobilePlayButton: document.getElementById('mobilePlayButton'),
+    mobileFitButton: document.getElementById('mobileFitButton'),
+    mobileRestoreLayoutButton: document.getElementById('mobileRestoreLayoutButton'),
+    mobileDownloadJsonButton: document.getElementById('mobileDownloadJsonButton'),
+    mobileConfigButton: document.getElementById('mobileConfigButton'),
+    mobileFileInput: document.getElementById('mobileFileInput'),
     actionFeedback: document.getElementById('actionFeedback'),
     configSummary: document.getElementById('configSummary'),
     constraintStatus: document.getElementById('constraintStatus')
@@ -52,7 +67,8 @@
     demo: null,
     originalDemo: null,
     lastGenerateReport: null,
-    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Gebruik Genereer layout bovenaan; de viewer springt daarna automatisch naar het eindbeeld.' },
+    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Desktop: acties rechtsboven. Mobiel: gebruik de bottom bar; Genereer layout springt automatisch naar het eindbeeld.' },
+    mobileSheetOpen: false,
     step: 0,
     controlsReady: false,
     playing: false,
@@ -606,7 +622,7 @@
         source_x: p.x,
         source_y: p.y,
         grid: { x: p.x, y: p.y },
-        generated_by: 'browser-greedy-v4351'
+        generated_by: 'browser-greedy-v4352'
       };
     });
     state.demo.constraints = { ...(state.demo.constraints || {}), hor_ver_free: true, diagonal_free: spec.diagonalFree };
@@ -623,10 +639,10 @@
       generation_max: generated.generationMax,
       no_limit: spec.noLimit,
       browser_generated: true,
-      engine: 'browser-js-v4351',
+      engine: 'browser-js-v4352',
       layout_scope: spec.noLimit ? 'all-nodes' : 'limited-nodes'
     };
-    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4351';
+    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4352';
     state.lastGenerateReport = { ...generated.stats, generationMax: generated.generationMax, count: targets.length, style: spec.style, rule: spec.rule, diagonalFree: spec.diagonalFree };
     state.undoStack = [];
     state.redoStack = [];
@@ -649,7 +665,7 @@
 
   function safeDownloadName() {
     const stem = state.demo?.project?.stem || state.demo?.greedy?.stem || state.demo?.project?.name || 'opengraph_greedy_grow';
-    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4351.json`;
+    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4352.json`;
   }
 
   function downloadCurrentJson() {
@@ -768,7 +784,11 @@
       els.fitButton, els.stepRange, els.undoButton, els.redoButton, els.resetViewButton,
       els.maxNodesInput, els.noLimitInput, els.autoSizeInput, els.nodeSizeInput, els.cellSizeInput, els.intervalInput,
       els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput,
-      els.diagonalFreeSelect, els.showConflictsInput, els.greedyStyleSelect, els.greedyRuleSelect, els.angleMinInput, els.generateLayoutButton, els.restoreLayoutButton, els.downloadJsonButton
+      els.diagonalFreeSelect, els.showConflictsInput, els.greedyStyleSelect, els.greedyRuleSelect, els.angleMinInput, els.generateLayoutButton, els.restoreLayoutButton, els.downloadJsonButton,
+      els.topGenerateLayoutButton, els.topRestoreLayoutButton, els.topDownloadJsonButton,
+      els.mobilePrevButton, els.mobileNextButton, els.mobileGenerateLayoutButton, els.mobileMenuButton,
+      els.mobileFirstButton, els.mobileLastButton, els.mobilePlayButton, els.mobileFitButton,
+      els.mobileRestoreLayoutButton, els.mobileDownloadJsonButton, els.mobileConfigButton, els.mobileFileInput
     ];
     for (const input of inputs) if (input) input.disabled = !enabled;
   }
@@ -1210,6 +1230,35 @@
     render();
   }
 
+  function setMobileSheet(open) {
+    state.mobileSheetOpen = !!open;
+    if (els.mobileSheet) {
+      els.mobileSheet.classList.toggle('open', state.mobileSheetOpen);
+      els.mobileSheet.setAttribute('aria-hidden', state.mobileSheetOpen ? 'false' : 'true');
+    }
+    if (els.mobileSheetBackdrop) {
+      els.mobileSheetBackdrop.classList.toggle('hidden', !state.mobileSheetOpen);
+      els.mobileSheetBackdrop.setAttribute('aria-hidden', state.mobileSheetOpen ? 'false' : 'true');
+    }
+    if (els.mobileMenuButton) els.mobileMenuButton.setAttribute('aria-expanded', state.mobileSheetOpen ? 'true' : 'false');
+  }
+
+  function closeMobileSheetAfter(action) {
+    return function wrappedMobileAction(event) {
+      if (event) event.preventDefault();
+      action();
+      setMobileSheet(false);
+    };
+  }
+
+  function loadFileFromInput(input) {
+    const file = input?.files?.[0];
+    if (!file) return;
+    loadFile(file)
+      .then(() => { if (input) input.value = ''; setMobileSheet(false); })
+      .catch(err => alert(err.message));
+  }
+
   function registerEvents() {
     els.nextButton.addEventListener('click', next);
     els.prevButton.addEventListener('click', prev);
@@ -1226,12 +1275,22 @@
     if (els.topGenerateLayoutButton) els.topGenerateLayoutButton.addEventListener('click', generateBrowserLayout);
     if (els.topRestoreLayoutButton) els.topRestoreLayoutButton.addEventListener('click', restoreJsonLayout);
     if (els.topDownloadJsonButton) els.topDownloadJsonButton.addEventListener('click', downloadCurrentJson);
+    if (els.mobilePrevButton) els.mobilePrevButton.addEventListener('click', prev);
+    if (els.mobileNextButton) els.mobileNextButton.addEventListener('click', next);
+    if (els.mobileGenerateLayoutButton) els.mobileGenerateLayoutButton.addEventListener('click', generateBrowserLayout);
+    if (els.mobileMenuButton) els.mobileMenuButton.addEventListener('click', () => setMobileSheet(!state.mobileSheetOpen));
+    if (els.mobileSheetCloseButton) els.mobileSheetCloseButton.addEventListener('click', () => setMobileSheet(false));
+    if (els.mobileSheetBackdrop) els.mobileSheetBackdrop.addEventListener('click', () => setMobileSheet(false));
+    if (els.mobileFirstButton) els.mobileFirstButton.addEventListener('click', closeMobileSheetAfter(first));
+    if (els.mobileLastButton) els.mobileLastButton.addEventListener('click', closeMobileSheetAfter(last));
+    if (els.mobilePlayButton) els.mobilePlayButton.addEventListener('click', closeMobileSheetAfter(togglePlaying));
+    if (els.mobileFitButton) els.mobileFitButton.addEventListener('click', closeMobileSheetAfter(fitView));
+    if (els.mobileRestoreLayoutButton) els.mobileRestoreLayoutButton.addEventListener('click', closeMobileSheetAfter(restoreJsonLayout));
+    if (els.mobileDownloadJsonButton) els.mobileDownloadJsonButton.addEventListener('click', closeMobileSheetAfter(downloadCurrentJson));
+    if (els.mobileConfigButton) els.mobileConfigButton.addEventListener('click', closeMobileSheetAfter(() => document.querySelector('.config-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })));
     els.stepRange.addEventListener('input', event => setStep(event.target.value));
-    els.fileInput.addEventListener('change', event => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      loadFile(file).catch(err => alert(err.message));
-    });
+    els.fileInput.addEventListener('change', event => loadFileFromInput(event.target));
+    if (els.mobileFileInput) els.mobileFileInput.addEventListener('change', event => loadFileFromInput(event.target));
 
     [els.maxNodesInput, els.noLimitInput, els.autoSizeInput, els.nodeSizeInput, els.cellSizeInput, els.intervalInput, els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput,
       els.diagonalFreeSelect, els.showConflictsInput, els.greedyStyleSelect, els.greedyRuleSelect, els.angleMinInput].filter(Boolean).forEach(input => {
@@ -1259,6 +1318,7 @@
 
     window.addEventListener('keydown', event => {
       const key = event.key.toLowerCase();
+      if (key === 'escape' && state.mobileSheetOpen) { event.preventDefault(); setMobileSheet(false); return; }
       const ctrl = event.ctrlKey || event.metaKey;
       if (ctrl && key === 'z') { event.preventDefault(); undo(); return; }
       if (ctrl && (key === 'y' || (event.shiftKey && key === 'z'))) { event.preventDefault(); redo(); return; }

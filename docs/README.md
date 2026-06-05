@@ -1,11 +1,12 @@
-# JAN Open Notation Viewer — PWA v4351
+# JAN Open Notation Viewer — PWA v4352
 
 Mobiele/desktop PWA-viewer voor **JAN/Open Notation**.
 
-## Nieuw in v4351
+## Nieuw in v4352
 
-- Generator-acties staan nu ook bovenaan in de hoofdtoolbar.
-- Na Genereer layout springt de viewer automatisch naar het eindbeeld.
+- Desktop-toolbar is gesplitst: navigatie links, bestand/Greedy-acties rechts.
+- Mobile gebruikt een vaste bottom bar: Vorige, Volgende, Genereer, Meer.
+- Het mobiele Meer-menu geeft toegang tot eerste/laatste stap, play, passend maken, herstel, download, config en JSON laden.
 - De statusregel meldt expliciet hoeveel knopen zijn gegenereerd, met style/rule/diagonal_free.
 
 
