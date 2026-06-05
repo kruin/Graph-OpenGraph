@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="JAN Open Notation viewer: mobiele demo voor open taalbomen, projecties en Greedy Grow JSON-exporten.">
-  <title>JAN Open Notation Viewer v4354</title>
+  <title>JAN Open Notation Viewer v4355</title>
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
@@ -14,8 +14,8 @@
   <header class="app-header">
     <div>
       <div class="eyebrow">JAN · Just Another Notation · OpenGraph</div>
-      <h1>JAN: Just Another Notation voor taalbomen <span class="version-tag">v4354</span></h1>
-      <p class="header-subtitle">Een uitnodigende kijklaag voor taalkundestudenten: bekijk taalbomen niet als vaste eindboom, maar als vrije knopen die stap voor stap groeien en ruimte laten voor projecties.</p>
+      <h1>JAN: Just Another Notation voor taalbomen <span class="version-tag">v4355</span></h1>
+      <p class="header-subtitle">Een uitnodigende kijklaag voor taalkundestudenten: bekijk taalbomen niet als vaste eindboom, maar als vrije knopen die stap voor stap groeien, waarbij elke keuze in de config uitlegt wat er gebeurt.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
   </header>
@@ -34,46 +34,59 @@
       <div class="toolbar-group toolbar-right" aria-label="Bestand en Greedy-acties">
         <button id="fitButton" type="button" title="Passend maken: tekengebied opnieuw om zichtbare knopen passen">Passend maken</button>
         <button id="resetViewButton" type="button" title="Reset weergave-instellingen">Reset view</button>
-        <button id="topConfigButton" type="button" aria-controls="topConfigPanel" aria-expanded="false" title="Open Greedy-config, weergave en constraints">Config ▾</button>
+        <button id="topConfigButton" class="primary-action config-main-button" type="button" aria-controls="topConfigPanel" aria-expanded="true" title="Open/sluit Config & uitleg: Greedy, weergave, constraints en groeiconcept">⚙ Config & uitleg ▴</button>
         <label class="file-label json-load" title="JSON laden: kies een eigen *_grow_demo.json uit OpenGraphEd">
           JSON laden
           <input id="fileInput" type="file" accept="application/json,.json">
         </label>
-        <button id="topGenerateLayoutButton" class="primary-action" type="button" title="Genereer nieuwe HOR/VER-vrije layout en toon direct het eindbeeld">Genereer</button>
+        <button id="topGenerateLayoutButton" class="primary-action" type="button" title="Genereer nieuwe HOR/VER-vrije layout en toon direct het eindbeeld">Genereer Greedy-layout</button>
         <button id="topRestoreLayoutButton" type="button" title="Herstel de originele JSON-layout">Herstel layout</button>
         <button id="topDownloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download JSON</button>
       </div>
     </section>
-    <section id="topConfigPanel" class="config-panel top-menu-config hidden" aria-label="Configmenu: Greedy Grow instellingen">
+    <section id="topConfigPanel" class="config-panel top-menu-config context-config-prominent" aria-label="Configmenu: Greedy Grow instellingen">
       <details open>
-        <summary>Config: Greedy, weergave en constraints</summary>
+        <summary>Config & uitleg: Greedy Grow, weergave en constraints</summary>
+        <div class="context-help-banner"><strong>Wat gebeurt er bij elke keuze?</strong> Gebruik de <span class="help-inline">?</span>-knoppen. Ze leggen uit wat de optie verandert, wat alleen visueel is, en wat de browser-generator echt opnieuw berekent.</div>
         <div class="control-grid">
-          <label>
-            Max knopen
+          <label class="option-with-help">
+            <span class="control-label-row">Max knopen
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Max knopen">?</span><span class="context-popover">Beperkt hoeveel knopen de viewer toont en hoeveel knopen de browser-generator verwerkt. Zet <strong>No limit</strong> aan als je alle knopen uit de JSON wilt gebruiken.</span>
+            </span>
             <input id="maxNodesInput" type="number" min="1" step="1" value="30">
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="noLimitInput" type="checkbox" checked>
-            No limit
+            <span>No limit</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg No limit">?</span><span class="context-popover">Aan = alle knopen uit de JSON tonen/genereren. Uit = alleen het aantal bij <strong>Max knopen</strong>. Handig om snel met een kleine testset te beginnen.</span>
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="autoSizeInput" type="checkbox" checked>
-            Auto size
+            <span>Auto size</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Auto size">?</span><span class="context-popover">Past knoopgrootte, labelgrootte en beeldkader aan de actuele layout aan. Dit verandert de JSON-coördinaten niet; het is een weergavehulp.</span>
           </label>
-          <label>
-            Knoopgrootte
+          <label class="option-with-help">
+            <span class="control-label-row">Knoopgrootte
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Knoopgrootte">?</span><span class="context-popover">Maakt de cirkels groter of kleiner. Dit is alleen visueel; de vrije HOR/VER-plaatsing en groeistappen blijven gelijk.</span>
+            </span>
             <input id="nodeSizeInput" type="range" min="3" max="20" step="1" value="6">
           </label>
-          <label>
-            Grid/celgrootte
+          <label class="option-with-help">
+            <span class="control-label-row">Grid/celgrootte
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Grid/celgrootte">?</span><span class="context-popover">Bepaalt de afstand tussen rasterlijnen. Groter = meer ruimte tussen knopen. Dit helpt om vrije lijnen, labels en projectieruimte beter te zien.</span>
+            </span>
             <input id="cellSizeInput" type="range" min="12" max="80" step="1" value="28">
           </label>
-          <label>
-            Interval ms
+          <label class="option-with-help">
+            <span class="control-label-row">Interval ms
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Interval">?</span><span class="context-popover">Snelheid van Play. Lager = sneller groeien. De stappen zelf veranderen niet; alleen de afspeelsnelheid verandert.</span>
+            </span>
             <input id="intervalInput" type="number" min="80" max="10000" step="50" value="700">
           </label>
-          <label>
-            Diagonal-free
+          <label class="option-with-help">
+            <span class="control-label-row">Diagonal-free
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Diagonal-free">?</span><span class="context-popover">Kiest welke diagonalen ook vrij moeten blijven. <strong>none</strong> controleert alleen unieke x/y-lijnen. <strong>both</strong> eist daarnaast vrije /- en \-diagonalen. Bij genereren gebruikt de browser deze constraint.</span>
+            </span>
             <select id="diagonalFreeSelect" title="Controleert vrije diagonalen in de bronplaatsing en kan door browser-generatie gebruikt worden.">
               <option value="none">none — alleen HOR/VER</option>
               <option value="slash">slash / — x+y uniek</option>
@@ -81,12 +94,15 @@
               <option value="both">both — beide diagonalen</option>
             </select>
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="showConflictsInput" type="checkbox" checked>
-            Markeer conflicten
+            <span>Markeer conflicten</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Markeer conflicten">?</span><span class="context-popover">Aan = knopen met dubbele HOR/VER- of diagonal-free-lijnen krijgen een rode markering. Uit = de layout blijft gelijk, maar conflicten worden niet visueel gemarkeerd.</span>
           </label>
-          <label>
-            Greedy stijl
+          <label class="option-with-help">
+            <span class="control-label-row">Greedy stijl
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Greedy stijl">?</span><span class="context-popover">Bepaalt in welke volgorde de browser kandidaatposities probeert. <strong>near0</strong> is compact; <strong>ring</strong> verspreidt ringgewijs; <strong>quadrant</strong> verdeelt over kwadranten; <strong>maxturn</strong> zoekt sterkere draai in groeilijnen.</span>
+            </span>
             <select id="greedyStyleSelect" title="Browser-generator: sorteert kandidaatpunten volgens deze stijl.">
               <option value="near0">near0 — compact rond oorsprong</option>
               <option value="maxturn">maxturn — grootste draai eerst</option>
@@ -94,8 +110,10 @@
               <option value="ring">ring — ringgewijs</option>
             </select>
           </label>
-          <label>
-            Regel
+          <label class="option-with-help">
+            <span class="control-label-row">Regel
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Regel">?</span><span class="context-popover">Extra groeiregel voor lijnen tussen opeenvolgende stappen. <strong>none</strong> doet niets extra. <strong>extension</strong> vermijdt dezelfde richting. <strong>collinear</strong> vermijdt rechte vervolgsegmenten. <strong>angle</strong> gebruikt de minimumhoek.</span>
+            </span>
             <select id="greedyRuleSelect" title="Browser-generator: verbiedt bepaalde groeilijnen.">
               <option value="none">none — geen extra lijnregel</option>
               <option value="extension">extension — geen zelfde richting</option>
@@ -103,38 +121,46 @@
               <option value="angle">angle — minimumhoek gebruiken</option>
             </select>
           </label>
-          <label>
-            Minimumhoek
+          <label class="option-with-help">
+            <span class="control-label-row">Minimumhoek
+              <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Minimumhoek">?</span><span class="context-popover">Alleen actief als <strong>Regel = angle</strong>. De generator probeert dan te voorkomen dat opeenvolgende groeilijnen te vlak of te recht op elkaar aansluiten.</span>
+            </span>
             <input id="angleMinInput" type="number" min="0" max="89" step="1" value="30">
           </label>
-          <div class="action-row" aria-label="Browser Greedy generator">
-            <button id="generateLayoutButton" type="button" title="Genereer nieuwe HOR/VER-vrije layout in de browser">Genereer Greedy-layout</button>
-            <button id="restoreLayoutButton" type="button" title="Herstel de originele JSON-plaatsing">Herstel oorspronkelijke layout</button>
-            <button id="downloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download actuele JSON</button>
+          <div class="action-row contextual-action-row" aria-label="Browser Greedy generator">
+            <div class="action-with-help"><button id="generateLayoutButton" type="button" title="Genereer nieuwe HOR/VER-vrije layout in de browser">Genereer Greedy-layout</button><span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Genereer Greedy-layout">?</span><span class="context-popover">Berekent in de browser nieuwe x/y-posities voor de zichtbare of volledige knopenset. Daarna springt de viewer naar het eindbeeld zodat je direct ziet of de layout werkt.</span></div>
+            <div class="action-with-help"><button id="restoreLayoutButton" type="button" title="Herstel de originele JSON-plaatsing">Herstel oorspronkelijke layout</button><span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Herstel oorspronkelijke layout">?</span><span class="context-popover">Zet de layout terug zoals die in het geladen JSON-bestand stond. Handig om browser-generatie met de oorspronkelijke export te vergelijken.</span></div>
+            <div class="action-with-help"><button id="downloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download actuele JSON</button><span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Download actuele JSON">?</span><span class="context-popover">Downloadt de actuele staat, inclusief eventueel door de browser gegenereerde coördinaten en greedy-config. Dit is geen screenshot maar JSON.</span></div>
           </div>
           <p id="configSummary" class="config-summary">Greedy-config wordt geladen.</p>
           <p id="constraintStatus" class="constraint-status neutral">Conflictcontrole wordt geladen.</p>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="growGridInput" type="checkbox" checked>
-            Grid groeit mee
+            <span>Grid groeit mee</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Grid groeit mee">?</span><span class="context-popover">Aan = het raster volgt het actuele groeibeeld per stap. Uit = het raster wordt gebaseerd op de totale layout. Dit verandert geen knopen, alleen het referentiekader.</span>
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="showGridInput" type="checkbox" checked>
-            Grid tonen
+            <span>Grid tonen</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Grid tonen">?</span><span class="context-popover">Toont of verbergt het raster. Het raster maakt zichtbaar dat JAN met vrije bronknopen op eigen HOR- en VER-lijnen werkt.</span>
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="showLabelsInput" type="checkbox" checked>
-            Labels tonen
+            <span>Labels tonen</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Labels tonen">?</span><span class="context-popover">Toont knooplabels. Voor taalbomen zijn labels belangrijk: ze maken zichtbaar welke syntactische of lexicale categorie de knoop draagt.</span>
           </label>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="showEdgesInput" type="checkbox" checked>
-            Lijnen tonen
+            <span>Lijnen tonen</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Lijnen tonen">?</span><span class="context-popover">Standaard aan. Toont echte JSON-edges of afgeleide groeilijnen. Zo zie je het groeiconcept: elke stap voegt een knoop toe en verbindt die met de vorige groei.</span>
           </label>
+          <p class="inline-help"><strong>Context:</strong> Config is nu bewust prominent: dit is het bedieningscentrum voor Greedy Grow. De viewer laat telkens zien of een keuze alleen de weergave verandert, of dat de browser-generator echt een nieuwe layout berekent.</p>
           <p class="inline-help">Diagonal-free kan door de browser-generator worden gebruikt. Genereer Greedy-layout maakt een nieuwe plaatsing, springt naar het eindbeeld en meldt hoeveel knopen gegenereerd zijn; Download actuele JSON bewaart die actuele versie. Op desktop staan navigatie links en Greedy-acties rechts; op mobiel staan de kernacties onderaan.</p>
           <p class="inline-help">Lijnen staan standaard aan om het groeiconcept zichtbaar te maken. Als JSON echte edges bevat, toont de viewer die edges; als edges ontbreken, toont hij afgeleide groeilijnen tussen opeenvolgende stappen. De actuele groeilijn wordt extra gemarkeerd.</p>
-          <label class="checkline">
+          <label class="checkline option-with-help">
             <input id="showAxesInput" type="checkbox" checked>
-            Assen tonen
+            <span>Assen tonen</span>
+            <span class="help-tip" tabindex="0" role="button" aria-label="Uitleg Assen tonen">?</span><span class="context-popover">Toont de centrale x/y-assen als oriëntatie. Handig bij Greedy-stijlen zoals near0 en ring. Dit is alleen visueel.</span>
           </label>
         </div>
       </details>
@@ -161,7 +187,7 @@
         <input id="stepRange" type="range" min="0" max="0" step="1" value="0" aria-label="Grow stap">
       </div>
       <div id="metaLine" class="meta-line">Tap op de tekening of druk op spatie/Enter voor de volgende stap.</div>
-      <div id="actionFeedback" class="action-feedback neutral">Klaar om te testen. Desktop: acties rechtsboven. Mobiel: gebruik de bottom bar; Genereer Greedy-layout springt automatisch naar het eindbeeld.</div>
+      <div id="actionFeedback" class="action-feedback neutral">Klaar om te testen. Config & uitleg staat prominent bovenaan; tap/hover op ? bij elke optie. Genereer Greedy-layout springt automatisch naar het eindbeeld.</div>
     </section>
 
 

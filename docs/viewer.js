@@ -69,9 +69,9 @@
     demo: null,
     originalDemo: null,
     lastGenerateReport: null,
-    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Config staat in het top-menu; JAN nodigt uit om taalbomen als groeiende, open notatie te bekijken.' },
+    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Config & uitleg staat prominent bovenaan; tap/hover op ? bij elke optie.' },
     mobileSheetOpen: false,
-    configMenuOpen: false,
+    configMenuOpen: true,
     step: 0,
     controlsReady: false,
     playing: false,
@@ -661,7 +661,7 @@
         source_x: p.x,
         source_y: p.y,
         grid: { x: p.x, y: p.y },
-        generated_by: 'browser-greedy-v4354'
+        generated_by: 'browser-greedy-v4355'
       };
     });
     state.demo.constraints = { ...(state.demo.constraints || {}), hor_ver_free: true, diagonal_free: spec.diagonalFree };
@@ -678,10 +678,10 @@
       generation_max: generated.generationMax,
       no_limit: spec.noLimit,
       browser_generated: true,
-      engine: 'browser-js-v4354',
+      engine: 'browser-js-v4355',
       layout_scope: spec.noLimit ? 'all-nodes' : 'limited-nodes'
     };
-    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4354';
+    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4355';
     state.lastGenerateReport = { ...generated.stats, generationMax: generated.generationMax, count: targets.length, style: spec.style, rule: spec.rule, diagonalFree: spec.diagonalFree };
     state.undoStack = [];
     state.redoStack = [];
@@ -704,7 +704,7 @@
 
   function safeDownloadName() {
     const stem = state.demo?.project?.stem || state.demo?.greedy?.stem || state.demo?.project?.name || 'opengraph_greedy_grow';
-    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4354.json`;
+    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4355.json`;
   }
 
   function downloadCurrentJson() {
@@ -1299,7 +1299,7 @@
     }
     if (els.topConfigButton) {
       els.topConfigButton.setAttribute('aria-expanded', state.configMenuOpen ? 'true' : 'false');
-      els.topConfigButton.textContent = state.configMenuOpen ? 'Config ▴' : 'Config ▾';
+      els.topConfigButton.textContent = state.configMenuOpen ? '⚙ Config & uitleg ▴' : '⚙ Config & uitleg ▾';
     }
   }
 

@@ -1,14 +1,14 @@
-# JAN Open Notation Viewer — PWA v4354
+# JAN Open Notation Viewer — PWA v4355
 
 Mobiele/desktop PWA-viewer voor **JAN — Just Another Notation** binnen OpenGraph.
 
-## Nieuw in v4354
 
-- Config staat in het **top-menu** via de knop `Config ▾`.
-- De desktop-linkerkolom is rustiger: de configuratie staat niet meer permanent tussen uitleg en canvas.
-- JAN wordt expliciet geïntroduceerd als uitnodiging aan taalkundestudenten om taalbomen als open, groeiende notatie te bekijken.
-- Namen zijn aangescherpt: `Genereer Greedy-layout`, `Herstel oorspronkelijke layout`, `Download actuele JSON`, `Diagonal-free`, `Markeer conflicten`.
-- Mobiel opent `Meer → Config` nu hetzelfde topmenu-configpaneel.
+## Nieuw in v4355
+
+- Config prominenter bovenaan zichtbaar.
+- Contextuele `?`-uitleg bij de belangrijkste opties.
+- Uitleg maakt onderscheid tussen visuele opties, constraints en browser-generatie.
+- `Config & uitleg` staat standaard open zodat nieuwe gebruikers meteen zien wat keuzes doen.
 
 ## Scheiding
 
@@ -45,7 +45,7 @@ http://localhost:8088/carousel/index.html
 
 ## Testpunten
 
-1. `v4354` staat in de kop.
+1. `v4355` staat in de kop.
 2. `Config ▾` opent/sluit het configuratiepaneel bovenaan.
 3. `Genereer` of `Genereer Greedy-layout` springt naar het eindbeeld en toont feedback.
 4. `Meer → Config` werkt op mobiel.

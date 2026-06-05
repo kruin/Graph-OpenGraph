@@ -280,11 +280,11 @@ button:disabled { opacity: 0.45; }
 .node-circles { pointer-events: none; }
 .control-grid input:disabled { opacity: 0.55; }
 
-/* v4353/v4354: groeilijnen staan standaard aan; vrije bronplaatsing blijft de basis. */
+/* v4353-v4355: groeilijnen staan standaard aan; vrije bronplaatsing blijft de basis. */
 .node-highlights { pointer-events: none; }
 
 
-/* v4353/v4354: afgeleide groeilijnen ondersteunen het groeiconcept; ze veranderen de plaatsing niet. */
+/* v4353-v4355: afgeleide groeilijnen ondersteunen het groeiconcept; ze veranderen de plaatsing niet. */
 .inferred-edge {
   stroke-dasharray: 5 5;
   opacity: 0.72;
@@ -342,7 +342,7 @@ button:disabled { opacity: 0.45; }
 }
 
 
-/* v4352/v4354: generator-acties direct zichtbaar maken */
+/* v4352-v4355: generator-acties direct zichtbaar maken */
 .toolbar .primary-action {
   font-weight: 800;
   border-color: #334155;
@@ -379,7 +379,7 @@ button:disabled { opacity: 0.45; }
 }
 
 
-/* v4352/v4354: responsive desktop toolbar links/rechts + mobile bottom bar */
+/* v4352-v4355: responsive desktop toolbar links/rechts + mobile bottom bar */
 .split-toolbar {
   display: flex;
   align-items: stretch;
@@ -536,7 +536,7 @@ button:disabled { opacity: 0.45; }
 }
 
 
-/* v4354: config leeft als top-menu; JAN wordt als uitnodigende didactische ingang gepresenteerd. */
+/* v4354-v4355: config leeft als top-menu; JAN wordt als uitnodigende didactische ingang gepresenteerd. */
 .top-menu-config {
   grid-area: topconfig;
   z-index: 20;
@@ -607,4 +607,131 @@ button:disabled { opacity: 0.45; }
     grid-template-columns: 1fr;
   }
   .jan-callouts { display: none; }
+}
+
+
+/* v4355: config prominenter + contextuele popup-uitleg per optie. */
+.config-main-button {
+  font-weight: 900 !important;
+  border-color: #0f172a !important;
+  background: linear-gradient(180deg, #f8fafc, #e2e8f0) !important;
+  box-shadow: 0 0.12rem 0.55rem rgba(15, 23, 42, 0.16);
+}
+.context-config-prominent {
+  border-width: 2px;
+  border-color: color-mix(in srgb, var(--accent), var(--line) 42%);
+  box-shadow: 0 0.45rem 1.3rem var(--visible-shadow);
+}
+.context-config-prominent summary {
+  font-size: 1.02rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+.context-help-banner {
+  grid-column: 1 / -1;
+  margin: 0 0 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--accent), var(--line) 55%);
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--accent), var(--panel) 92%);
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.38;
+}
+.help-inline,
+.help-tip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.22rem;
+  height: 1.22rem;
+  border-radius: 999px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 0.76rem;
+  line-height: 1;
+  user-select: none;
+}
+.help-tip {
+  margin-left: 0.22rem;
+  cursor: help;
+  position: relative;
+  flex: 0 0 auto;
+}
+.option-with-help,
+.action-with-help {
+  position: relative;
+}
+.control-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.checkline.option-with-help {
+  align-items: center;
+  gap: 0.38rem;
+}
+.context-popover {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.38rem);
+  z-index: 90;
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 0.68rem 0.78rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 0.65rem 1.6rem rgba(15, 23, 42, 0.18);
+  font-size: 0.88rem;
+  font-weight: 520;
+  line-height: 1.35;
+}
+.help-tip:hover + .context-popover,
+.help-tip:focus + .context-popover,
+.help-tip:focus-visible + .context-popover {
+  display: block;
+}
+.help-tip:focus-visible {
+  outline: 2px solid #334155;
+  outline-offset: 2px;
+}
+.contextual-action-row {
+  gap: 0.55rem;
+}
+.action-with-help {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+.action-with-help .context-popover {
+  left: auto;
+  right: 0;
+}
+.action-with-help button {
+  width: 100%;
+}
+@media (min-width: 760px) {
+  .top-menu-config .control-grid {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}
+@media (max-width: 759px) {
+  .context-popover {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    top: auto;
+    bottom: calc(4.9rem + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: 38vh;
+    overflow: auto;
+  }
+  .context-help-banner { font-size: 0.85rem; padding: 0.58rem 0.65rem; }
+  .config-main-button { min-height: 2.7rem; }
 }
