@@ -280,11 +280,11 @@ button:disabled { opacity: 0.45; }
 .node-circles { pointer-events: none; }
 .control-grid input:disabled { opacity: 0.55; }
 
-/* v4353: groeilijnen staan standaard aan; vrije bronplaatsing blijft de basis. */
+/* v4353/v4354: groeilijnen staan standaard aan; vrije bronplaatsing blijft de basis. */
 .node-highlights { pointer-events: none; }
 
 
-/* v4353: afgeleide groeilijnen ondersteunen het groeiconcept; ze veranderen de plaatsing niet. */
+/* v4353/v4354: afgeleide groeilijnen ondersteunen het groeiconcept; ze veranderen de plaatsing niet. */
 .inferred-edge {
   stroke-dasharray: 5 5;
   opacity: 0.72;
@@ -342,7 +342,7 @@ button:disabled { opacity: 0.45; }
 }
 
 
-/* v4352: generator-acties direct zichtbaar maken */
+/* v4352/v4354: generator-acties direct zichtbaar maken */
 .toolbar .primary-action {
   font-weight: 800;
   border-color: #334155;
@@ -379,7 +379,7 @@ button:disabled { opacity: 0.45; }
 }
 
 
-/* v4352: responsive desktop toolbar links/rechts + mobile bottom bar */
+/* v4352/v4354: responsive desktop toolbar links/rechts + mobile bottom bar */
 .split-toolbar {
   display: flex;
   align-items: stretch;
@@ -533,4 +533,78 @@ button:disabled { opacity: 0.45; }
 @media (max-width: 380px) {
   .mobile-sheet-grid { grid-template-columns: 1fr; }
   .mobile-bottom-bar button span { font-size: 0.68rem; }
+}
+
+
+/* v4354: config leeft als top-menu; JAN wordt als uitnodigende didactische ingang gepresenteerd. */
+.top-menu-config {
+  grid-area: topconfig;
+  z-index: 20;
+  margin-top: -0.2rem;
+}
+.top-menu-config:not(.hidden) {
+  display: block !important;
+}
+.top-menu-config details[open] summary {
+  margin-bottom: 0.7rem;
+}
+.top-menu-config .control-grid {
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  align-items: end;
+}
+.top-menu-config .inline-help,
+.top-menu-config .config-summary,
+.top-menu-config .constraint-status,
+.top-menu-config .action-row {
+  grid-column: 1 / -1;
+}
+.top-menu-config .action-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.jan-invite-panel {
+  border-color: color-mix(in srgb, var(--accent), var(--line) 65%);
+}
+.jan-invite-panel h2 {
+  font-size: 1.05rem;
+}
+.jan-callouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+.jan-callouts span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel), var(--bg) 35%);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+#topConfigButton[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--accent), var(--line) 30%);
+  background: color-mix(in srgb, var(--accent), var(--panel) 85%);
+}
+
+@media (min-width: 760px) {
+  .app-shell {
+    grid-template-areas:
+      "toolbar toolbar"
+      "topconfig topconfig"
+      "intro canvas"
+      "status canvas"
+      "text canvas";
+  }
+}
+
+@media (max-width: 759px) {
+  .top-menu-config {
+    margin-top: 0;
+  }
+  .top-menu-config .control-grid,
+  .top-menu-config .action-row {
+    grid-template-columns: 1fr;
+  }
+  .jan-callouts { display: none; }
 }

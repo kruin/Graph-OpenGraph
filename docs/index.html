@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="JAN Open Notation viewer: mobiele demo voor open taalbomen, projecties en Greedy Grow JSON-exporten.">
-  <title>JAN Open Notation Viewer v4353</title>
+  <title>JAN Open Notation Viewer v4354</title>
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
@@ -13,9 +13,9 @@
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">JAN · OpenGraph</div>
-      <h1>Open Notation voor taalbomen <span class="version-tag">v4353</span></h1>
-      <p class="header-subtitle">Demo-viewer: vrije HOR/VER-plaatsing, groeilijnen standaard aan, huidige groeistap gemarkeerd, diagonal-free controle, browser-Greedy-generator en mobiele bediening. Uitlegbeelden staan in de JAN-carousel.</p>
+      <div class="eyebrow">JAN · Just Another Notation · OpenGraph</div>
+      <h1>JAN: Just Another Notation voor taalbomen <span class="version-tag">v4354</span></h1>
+      <p class="header-subtitle">Een uitnodigende kijklaag voor taalkundestudenten: bekijk taalbomen niet als vaste eindboom, maar als vrije knopen die stap voor stap groeien en ruimte laten voor projecties.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
   </header>
@@ -34,37 +34,19 @@
       <div class="toolbar-group toolbar-right" aria-label="Bestand en Greedy-acties">
         <button id="fitButton" type="button" title="Passend maken: tekengebied opnieuw om zichtbare knopen passen">Passend maken</button>
         <button id="resetViewButton" type="button" title="Reset weergave-instellingen">Reset view</button>
+        <button id="topConfigButton" type="button" aria-controls="topConfigPanel" aria-expanded="false" title="Open Greedy-config, weergave en constraints">Config ▾</button>
         <label class="file-label json-load" title="JSON laden: kies een eigen *_grow_demo.json uit OpenGraphEd">
           JSON laden
           <input id="fileInput" type="file" accept="application/json,.json">
         </label>
-        <button id="topGenerateLayoutButton" class="primary-action" type="button" title="Genereer nieuwe HOR/VER-vrije layout en toon direct het eindbeeld">Genereer layout</button>
-        <button id="topRestoreLayoutButton" type="button" title="Herstel de originele JSON-layout">Herstel JSON-layout</button>
+        <button id="topGenerateLayoutButton" class="primary-action" type="button" title="Genereer nieuwe HOR/VER-vrije layout en toon direct het eindbeeld">Genereer</button>
+        <button id="topRestoreLayoutButton" type="button" title="Herstel de originele JSON-layout">Herstel layout</button>
         <button id="topDownloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download JSON</button>
       </div>
     </section>
-
-    <section class="intro-panel" aria-label="JAN uitleg">
-      <div class="intro-kicker">JAN</div>
-      <h2>Demo-viewer</h2>
-      <p>Deze viewer toont JAN/Open Notation als groeiende graph: vrije HOR/VER-plaatsing, groeilijnen standaard zichtbaar, de actuele groeistap gemarkeerd, optioneel diagonal-free controle, Greedy-config, browser-generatie, mobiele bottom bar, raster en stap-voor-stap afspelen van een JSON-export.</p>
-      <p>De inhoudelijke voorbeelden staan niet meer als losse viewer-voorbeelden in dit scherm. Gebruik daarvoor de JAN-carousel.</p>
-      <a class="button-link" href="carousel/index.html" title="Open de JAN-carousel met uitlegbeelden">JAN-carousel openen</a>
-    </section>
-
-    <section class="status-panel" aria-live="polite">
-      <div id="titleLine" class="title-line">—</div>
-      <div class="meter-row">
-        <span id="stepLabel">Stap 0 / 0</span>
-        <input id="stepRange" type="range" min="0" max="0" step="1" value="0" aria-label="Grow stap">
-      </div>
-      <div id="metaLine" class="meta-line">Tap op de tekening of druk op spatie/Enter voor de volgende stap.</div>
-      <div id="actionFeedback" class="action-feedback neutral">Klaar om te testen. Desktop: acties rechtsboven. Mobiel: gebruik de bottom bar; Genereer layout springt automatisch naar het eindbeeld.</div>
-    </section>
-
-    <section class="config-panel" aria-label="Greedy Grow instellingen">
+    <section id="topConfigPanel" class="config-panel top-menu-config hidden" aria-label="Configmenu: Greedy Grow instellingen">
       <details open>
-        <summary>Greedy-config en weergave</summary>
+        <summary>Config: Greedy, weergave en constraints</summary>
         <div class="control-grid">
           <label>
             Max knopen
@@ -91,7 +73,7 @@
             <input id="intervalInput" type="number" min="80" max="10000" step="50" value="700">
           </label>
           <label>
-            Diagonal-free controle
+            Diagonal-free
             <select id="diagonalFreeSelect" title="Controleert vrije diagonalen in de bronplaatsing en kan door browser-generatie gebruikt worden.">
               <option value="none">none — alleen HOR/VER</option>
               <option value="slash">slash / — x+y uniek</option>
@@ -101,7 +83,7 @@
           </label>
           <label class="checkline">
             <input id="showConflictsInput" type="checkbox" checked>
-            Conflicten tonen
+            Markeer conflicten
           </label>
           <label>
             Greedy stijl
@@ -126,9 +108,9 @@
             <input id="angleMinInput" type="number" min="0" max="89" step="1" value="30">
           </label>
           <div class="action-row" aria-label="Browser Greedy generator">
-            <button id="generateLayoutButton" type="button" title="Genereer nieuwe HOR/VER-vrije layout in de browser">Genereer layout</button>
-            <button id="restoreLayoutButton" type="button" title="Herstel de originele JSON-plaatsing">Herstel JSON-layout</button>
-            <button id="downloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download JSON</button>
+            <button id="generateLayoutButton" type="button" title="Genereer nieuwe HOR/VER-vrije layout in de browser">Genereer Greedy-layout</button>
+            <button id="restoreLayoutButton" type="button" title="Herstel de originele JSON-plaatsing">Herstel oorspronkelijke layout</button>
+            <button id="downloadJsonButton" type="button" title="Download de actuele viewer-JSON">Download actuele JSON</button>
           </div>
           <p id="configSummary" class="config-summary">Greedy-config wordt geladen.</p>
           <p id="constraintStatus" class="constraint-status neutral">Conflictcontrole wordt geladen.</p>
@@ -148,7 +130,7 @@
             <input id="showEdgesInput" type="checkbox" checked>
             Lijnen tonen
           </label>
-          <p class="inline-help">Diagonal-free controle kan door de browser-generator worden gebruikt. Genereer layout maakt een nieuwe plaatsing, springt naar het eindbeeld en meldt hoeveel knopen gegenereerd zijn; Download JSON bewaart die actuele versie. Op desktop staan navigatie links en Greedy-acties rechts; op mobiel staan de kernacties onderaan.</p>
+          <p class="inline-help">Diagonal-free kan door de browser-generator worden gebruikt. Genereer Greedy-layout maakt een nieuwe plaatsing, springt naar het eindbeeld en meldt hoeveel knopen gegenereerd zijn; Download actuele JSON bewaart die actuele versie. Op desktop staan navigatie links en Greedy-acties rechts; op mobiel staan de kernacties onderaan.</p>
           <p class="inline-help">Lijnen staan standaard aan om het groeiconcept zichtbaar te maken. Als JSON echte edges bevat, toont de viewer die edges; als edges ontbreken, toont hij afgeleide groeilijnen tussen opeenvolgende stappen. De actuele groeilijn wordt extra gemarkeerd.</p>
           <label class="checkline">
             <input id="showAxesInput" type="checkbox" checked>
@@ -157,6 +139,31 @@
         </div>
       </details>
     </section>
+
+
+    <section class="intro-panel jan-invite-panel" aria-label="JAN uitleg">
+      <div class="intro-kicker">JAN · Just Another Notation</div>
+      <h2>Voor taalkundestudenten: kijk eerst naar de taalboom</h2>
+      <p><strong>JAN</strong> is een uitnodiging om taalbomen anders te lezen. Niet als één gesloten eindplaatje, maar als een open notatie: vrije knopen op een raster, groeilijnen, en ruimte voor projecties zoals LEX, SYNT en LOG.</p>
+      <p>Start met een eenvoudige groeiweergave. Volg hoe de knopen verschijnen, zet lijnen of conflicten aan/uit, en open daarna de carousel voor uitlegbeelden. Zo wordt zichtbaar waarom OpenGraph ruimte maakt voor meerdere taalkundige perspectieven op dezelfde zin.</p>
+      <div class="jan-callouts" aria-label="JAN startpunten">
+        <span>1 · bekijk vrije knopen</span>
+        <span>2 · volg groeilijnen</span>
+        <span>3 · vergelijk projecties</span>
+      </div>
+      <a class="button-link" href="carousel/index.html" title="Open de JAN-carousel met uitlegbeelden">Bekijk taalbomen in de JAN-carousel</a>
+    </section>
+
+    <section class="status-panel" aria-live="polite">
+      <div id="titleLine" class="title-line">—</div>
+      <div class="meter-row">
+        <span id="stepLabel">Stap 0 / 0</span>
+        <input id="stepRange" type="range" min="0" max="0" step="1" value="0" aria-label="Grow stap">
+      </div>
+      <div id="metaLine" class="meta-line">Tap op de tekening of druk op spatie/Enter voor de volgende stap.</div>
+      <div id="actionFeedback" class="action-feedback neutral">Klaar om te testen. Desktop: acties rechtsboven. Mobiel: gebruik de bottom bar; Genereer Greedy-layout springt automatisch naar het eindbeeld.</div>
+    </section>
+
 
     <section id="canvasWrap" class="canvas-wrap" aria-label="Greedy Grow canvas">
       <svg id="graphSvg" role="img" aria-label="Greedy Grow graph" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -167,10 +174,10 @@
       <p id="stepText">Laad een Greedy Grow JSON-bestand of gebruik de technische startdemo.</p>
       <details open>
         <summary>JAN, viewer en carousel</summary>
-        <p><strong>Viewer</strong>: speelt één groeiende graph af op basis van JSON. Dit scherm is bedoeld om plaatsing, groeistappen, groeilijnen, raster, labels, Greedy-config, browser-generatie, herstel/download en constraint-conflicten te testen.</p>
+        <p><strong>Viewer</strong>: speelt één groeiende graph af op basis van JSON. Dit scherm is bedoeld om plaatsing, groeistappen, groeilijnen, raster, labels, topmenu-config, browser-generatie, herstel/download en constraint-conflicten te testen.</p>
         <p><strong>Carousel</strong>: bevat de uitlegbeelden en didactische voorbeelden van JAN/Open Notation. Gebruik die laag voor introductie, uitleg en vergelijking.</p>
         <p><strong>Passend maken</strong> tekent opnieuw en past de viewBox aan de zichtbare knopen aan. Dit verandert geen JSON en geen stappen.</p>
-        <p><strong>JSON laden</strong> opent een eigen <code>*_grow_demo.json</code>-bestand, bijvoorbeeld uit OpenGraphEd via <code>Greedy → Export Greedy Grow JSON</code>. De viewer leest o.a. <code>greedy</code>, <code>freedom.diagonal_free</code> en <code>constraints.diagonal_free</code> indien aanwezig. <strong>Genereer layout</strong> maakt daarna in de browser een nieuwe Greedy-plaatsing; <strong>Herstel JSON-layout</strong> keert terug naar de geladen bron.</p>
+        <p><strong>JSON laden</strong> opent een eigen <code>*_grow_demo.json</code>-bestand, bijvoorbeeld uit OpenGraphEd via <code>Greedy → Export Greedy Grow JSON</code>. De viewer leest o.a. <code>greedy</code>, <code>freedom.diagonal_free</code> en <code>constraints.diagonal_free</code> indien aanwezig. <strong>Genereer Greedy-layout</strong> maakt daarna in de browser een nieuwe Greedy-plaatsing; <strong>Herstel oorspronkelijke layout</strong> keert terug naar de geladen bron.</p>
       </details>
       <details>
         <summary>Mobiele bediening</summary>
@@ -199,8 +206,8 @@
       <button id="mobilePlayButton" type="button">Play / pauze</button>
       <button id="mobileFitButton" type="button">Passend maken</button>
       <button id="mobileRestoreLayoutButton" type="button">Herstel layout</button>
-      <button id="mobileDownloadJsonButton" type="button">Download JSON</button>
-      <button id="mobileConfigButton" type="button">Naar config</button>
+      <button id="mobileDownloadJsonButton" type="button">Download actuele JSON</button>
+      <button id="mobileConfigButton" type="button">Config</button>
       <a class="mobile-sheet-link" href="carousel/index.html">JAN-carousel</a>
       <label class="file-label json-load mobile-file-label" title="JSON laden">
         JSON laden

@@ -43,6 +43,8 @@
     topGenerateLayoutButton: document.getElementById('topGenerateLayoutButton'),
     topRestoreLayoutButton: document.getElementById('topRestoreLayoutButton'),
     topDownloadJsonButton: document.getElementById('topDownloadJsonButton'),
+    topConfigButton: document.getElementById('topConfigButton'),
+    topConfigPanel: document.getElementById('topConfigPanel'),
     mobilePrevButton: document.getElementById('mobilePrevButton'),
     mobileNextButton: document.getElementById('mobileNextButton'),
     mobileGenerateLayoutButton: document.getElementById('mobileGenerateLayoutButton'),
@@ -67,8 +69,9 @@
     demo: null,
     originalDemo: null,
     lastGenerateReport: null,
-    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Lijnen staan standaard aan; de actuele groeistap wordt als groeilijn gemarkeerd.' },
+    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Config staat in het top-menu; JAN nodigt uit om taalbomen als groeiende, open notatie te bekijken.' },
     mobileSheetOpen: false,
+    configMenuOpen: false,
     step: 0,
     controlsReady: false,
     playing: false,
@@ -658,7 +661,7 @@
         source_x: p.x,
         source_y: p.y,
         grid: { x: p.x, y: p.y },
-        generated_by: 'browser-greedy-v4352'
+        generated_by: 'browser-greedy-v4354'
       };
     });
     state.demo.constraints = { ...(state.demo.constraints || {}), hor_ver_free: true, diagonal_free: spec.diagonalFree };
@@ -675,15 +678,15 @@
       generation_max: generated.generationMax,
       no_limit: spec.noLimit,
       browser_generated: true,
-      engine: 'browser-js-v4352',
+      engine: 'browser-js-v4354',
       layout_scope: spec.noLimit ? 'all-nodes' : 'limited-nodes'
     };
-    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4352';
+    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4354';
     state.lastGenerateReport = { ...generated.stats, generationMax: generated.generationMax, count: targets.length, style: spec.style, rule: spec.rule, diagonalFree: spec.diagonalFree };
     state.undoStack = [];
     state.redoStack = [];
     state.step = effectiveMaxStep();
-    setActionNotice('ok', `Layout gegenereerd: ${targets.length} knopen · diagonal_free=${diagonalLabel(spec.diagonalFree)} · style=${spec.style} · rule=${spec.rule} · getest=${generated.stats.tested}. Eindbeeld wordt getoond.`);
+    setActionNotice('ok', `Greedy-layout gegenereerd: ${targets.length} knopen · diagonal_free=${diagonalLabel(spec.diagonalFree)} · style=${spec.style} · rule=${spec.rule} · getest=${generated.stats.tested}. Eindbeeld wordt getoond.`);
     render();
   }
 
@@ -694,14 +697,14 @@
     state.view = { ...state.view, ...currentView };
     state.lastGenerateReport = null;
     if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
-    setActionNotice('neutral', 'Originele JSON-layout hersteld. Gebruik Genereer layout om opnieuw te testen.');
+    setActionNotice('neutral', 'Originele JSON-layout hersteld. Gebruik Genereer Greedy-layout om opnieuw te testen.');
     syncConfigControls();
     render();
   }
 
   function safeDownloadName() {
     const stem = state.demo?.project?.stem || state.demo?.greedy?.stem || state.demo?.project?.name || 'opengraph_greedy_grow';
-    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4352.json`;
+    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4354.json`;
   }
 
   function downloadCurrentJson() {
@@ -1288,6 +1291,18 @@
     if (els.mobileMenuButton) els.mobileMenuButton.setAttribute('aria-expanded', state.mobileSheetOpen ? 'true' : 'false');
   }
 
+  function setTopConfigMenu(open) {
+    state.configMenuOpen = !!open;
+    if (els.topConfigPanel) {
+      els.topConfigPanel.classList.toggle('hidden', !state.configMenuOpen);
+      els.topConfigPanel.setAttribute('aria-hidden', state.configMenuOpen ? 'false' : 'true');
+    }
+    if (els.topConfigButton) {
+      els.topConfigButton.setAttribute('aria-expanded', state.configMenuOpen ? 'true' : 'false');
+      els.topConfigButton.textContent = state.configMenuOpen ? 'Config ▴' : 'Config ▾';
+    }
+  }
+
   function closeMobileSheetAfter(action) {
     return function wrappedMobileAction(event) {
       if (event) event.preventDefault();
@@ -1320,6 +1335,7 @@
     if (els.topGenerateLayoutButton) els.topGenerateLayoutButton.addEventListener('click', generateBrowserLayout);
     if (els.topRestoreLayoutButton) els.topRestoreLayoutButton.addEventListener('click', restoreJsonLayout);
     if (els.topDownloadJsonButton) els.topDownloadJsonButton.addEventListener('click', downloadCurrentJson);
+    if (els.topConfigButton) els.topConfigButton.addEventListener('click', () => setTopConfigMenu(!state.configMenuOpen));
     if (els.mobilePrevButton) els.mobilePrevButton.addEventListener('click', prev);
     if (els.mobileNextButton) els.mobileNextButton.addEventListener('click', next);
     if (els.mobileGenerateLayoutButton) els.mobileGenerateLayoutButton.addEventListener('click', generateBrowserLayout);
@@ -1332,7 +1348,7 @@
     if (els.mobileFitButton) els.mobileFitButton.addEventListener('click', closeMobileSheetAfter(fitView));
     if (els.mobileRestoreLayoutButton) els.mobileRestoreLayoutButton.addEventListener('click', closeMobileSheetAfter(restoreJsonLayout));
     if (els.mobileDownloadJsonButton) els.mobileDownloadJsonButton.addEventListener('click', closeMobileSheetAfter(downloadCurrentJson));
-    if (els.mobileConfigButton) els.mobileConfigButton.addEventListener('click', closeMobileSheetAfter(() => document.querySelector('.config-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })));
+    if (els.mobileConfigButton) els.mobileConfigButton.addEventListener('click', closeMobileSheetAfter(() => { setTopConfigMenu(true); document.querySelector('.top-menu-config')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     els.stepRange.addEventListener('input', event => setStep(event.target.value));
     els.fileInput.addEventListener('change', event => loadFileFromInput(event.target));
     if (els.mobileFileInput) els.mobileFileInput.addEventListener('change', event => loadFileFromInput(event.target));
@@ -1363,6 +1379,7 @@
 
     window.addEventListener('keydown', event => {
       const key = event.key.toLowerCase();
+      if (key === 'escape') { setTopConfigMenu(false); setMobileSheet(false); return; }
       if (key === 'escape' && state.mobileSheetOpen) { event.preventDefault(); setMobileSheet(false); return; }
       const ctrl = event.ctrlKey || event.metaKey;
       if (ctrl && key === 'z') { event.preventDefault(); undo(); return; }

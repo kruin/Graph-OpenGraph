@@ -1,41 +1,21 @@
-# JAN Open Notation Viewer — PWA v4353
+# JAN Open Notation Viewer — PWA v4354
 
-Mobiele/desktop PWA-viewer voor **JAN/Open Notation**.
+Mobiele/desktop PWA-viewer voor **JAN — Just Another Notation** binnen OpenGraph.
 
-## Nieuw in v4353
+## Nieuw in v4354
 
-- Desktop-toolbar is gesplitst: navigatie links, bestand/Greedy-acties rechts.
-- Mobile gebruikt een vaste bottom bar: Vorige, Volgende, Genereer, Meer.
-- Het mobiele Meer-menu geeft toegang tot eerste/laatste stap, play, passend maken, herstel, download, config en JSON laden.
-- De statusregel meldt expliciet hoeveel knopen zijn gegenereerd, met style/rule/diagonal_free.
+- Config staat in het **top-menu** via de knop `Config ▾`.
+- De desktop-linkerkolom is rustiger: de configuratie staat niet meer permanent tussen uitleg en canvas.
+- JAN wordt expliciet geïntroduceerd als uitnodiging aan taalkundestudenten om taalbomen als open, groeiende notatie te bekijken.
+- Namen zijn aangescherpt: `Genereer Greedy-layout`, `Herstel oorspronkelijke layout`, `Download actuele JSON`, `Diagonal-free`, `Markeer conflicten`.
+- Mobiel opent `Meer → Config` nu hetzelfde topmenu-configpaneel.
 
-
-De viewer bevat nu een eerste **browser-Greedy-generator** naast de bestaande afspeelviewer.
-
-```text
-Genereer layout      = bereken nieuwe HOR/VER-vrije plaatsing in de browser
-Herstel JSON-layout  = keer terug naar de geladen bronplaatsing
-Download JSON        = bewaar de actuele viewer-JSON
-```
-
-De browser-generator ondersteunt:
-
-```text
-style: near0 / maxturn / quadrant / ring
-rule: none / extension / collinear / angle
-diagonal_free: none / slash / backslash / both
-```
-
-De generator wijzigt de zichtbare/gelimiteerde knopen. De viewer is nog geen volledige graph-editor: knopen slepen, labels bewerken en edges tekenen zitten nog in de desktopversie.
-
-## Scheiding vanaf v4348
+## Scheiding
 
 ```text
 viewer   = één JSON/grow-weergave afspelen, controleren en beperkt hergenereren
-carousel = uitlegbeelden en didactische voorbeelden tonen
+carousel = uitlegbeelden en didactische taalboomvoorbeelden tonen
 ```
-
-De viewer bevat daarom geen voorbeeldkeuzelijst meer.
 
 ## Start lokaal
 
@@ -57,37 +37,20 @@ Open daarna:
 http://localhost:8088
 ```
 
-Open de carousel:
+Carousel:
 
 ```text
 http://localhost:8088/carousel/index.html
 ```
 
-Voor telefoon op hetzelfde netwerk:
+## Testpunten
 
-```text
-http://<pc-ip>:8088
-```
+1. `v4354` staat in de kop.
+2. `Config ▾` opent/sluit het configuratiepaneel bovenaan.
+3. `Genereer` of `Genereer Greedy-layout` springt naar het eindbeeld en toont feedback.
+4. `Meer → Config` werkt op mobiel.
+5. `JAN-carousel` opent de didactische uitleglaag.
 
-## Knoppen en velden
+## Concept
 
-- `Greedy stijl`: kiest de sorteervolgorde van kandidaatpunten.
-- `Regel`: verbiedt bepaalde groeilijnen.
-- `Minimumhoek`: gebruikt bij `rule=angle`.
-- `Diagonal-free controle`: kiest welke extra diagonal constraints bovenop HOR/VER worden gecontroleerd en gegenereerd.
-- `Genereer layout`: berekent een nieuwe plaatsing in de browser.
-- `Herstel JSON-layout`: zet de geladen JSON-plaatsing terug.
-- `Download JSON`: downloadt de actuele viewer-JSON.
-- `Conflicten tonen`: markeert zichtbare conflicterende knopen.
-- `Passend maken`: herberekent de zichtbare tekening en past de SVG-viewBox opnieuw aan de zichtbare knopen aan. Dit verandert geen stappen.
-- `JSON laden`: opent een eigen `*_grow_demo.json`, bijvoorbeeld uit OpenGraphEd via `Greedy → Export Greedy Grow JSON`.
-- `Lijnen tonen`: toont echte JSON-edges, of — als die ontbreken — afgeleide groeilijnen tussen opeenvolgende stappen.
-- `JAN-carousel openen`: opent de aparte uitleglaag met beelden en teksten.
-
-
-## v4353
-
-- Lijnen/groeilijnen staan standaard aan.
-- De actuele groeistap wordt visueel gemarkeerd met een dikkere lijn en pijlpunt.
-- Als de JSON geen `edges[]` bevat, toont de viewer afgeleide groeilijnen tussen opeenvolgende stappen.
-- De staptekst vermeldt nu welke knoop in de huidige groeistap wordt toegevoegd.
+JAN staat hier voor **Just Another Notation**: geen vervanging van taalkundige analyse, maar een open kijknotatie. De viewer toont vrije HOR/VER-plaatsing en groeilijnen; de carousel legt stap voor stap uit waarom deze open notatie ruimte maakt voor projecties zoals LEX, SYNT en LOG.
