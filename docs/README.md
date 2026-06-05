@@ -1,60 +1,22 @@
-# JAN Open Notation Viewer — PWA v4348
+# Graph-OpenGraph · JAN Open Notation Viewer v4350
 
-Mobiele/desktop PWA-viewer voor **JAN/Open Notation**.
+Statische GitHub Pages-demo van de JAN/Open Notation viewer voor OpenGraph.
 
-## Scheiding vanaf v4348
+## Online
 
-```text
-viewer   = één JSON/grow-weergave afspelen en testen
-carousel = uitlegbeelden en didactische voorbeelden tonen
-```
+https://kruin.github.io/Graph-OpenGraph/
 
-De viewer bevat daarom geen voorbeeldkeuzelijst meer.
+## Inhoud
 
-## Start lokaal
+- `index.html` — JAN Open Notation viewer
+- `viewer.js` — JSON/grow-afspeler plus browser-Greedy-generator
+- `styles.css` — viewer-styling
+- `samples/` — technische Greedy Grow JSON-demobestanden
+- `carousel/` — JAN-carousel met uitlegbeelden
+- `manifest.webmanifest` en `sw.js` — PWA-bestanden
 
-Dubbelklik in de projectroot op:
+## Viewer versus carousel
 
-```bat
-START-GREEDY-GROW-VIEWER.bat
-```
+De viewer toont één JSON/grow-weergave: vrije HOR/VER-plaatsing, diagonal-free controle, browser-generatie, optioneel raster, optionele lijnen en stap-voor-stap afspelen.
 
-Of start in deze map:
-
-```bat
-start-local-viewer.bat
-```
-
-Open daarna:
-
-```text
-http://localhost:8088
-```
-
-Open de carousel:
-
-```text
-http://localhost:8088/carousel/index.html
-```
-
-Voor telefoon op hetzelfde netwerk:
-
-```text
-http://<pc-ip>:8088
-```
-
-## Knoppen
-
-- `Passend maken`: herberekent de zichtbare tekening en past de SVG-viewBox opnieuw aan de zichtbare knopen aan. Dit verandert geen JSON en geen stappen.
-- `JSON laden`: opent een eigen `*_grow_demo.json`, bijvoorbeeld uit OpenGraphEd via `Greedy → Export Greedy Grow JSON`.
-- `Lijnen tonen`: toont echte JSON-edges, of — als die ontbreken — afgeleide groeilijnen tussen opeenvolgende stappen.
-- `JAN-carousel openen`: opent de aparte uitleglaag met beelden en teksten.
-
-## Carousel
-
-De web-carousel gebruikt de bestaande OpenGraph-carouselbeelden en teksten:
-
-```text
-mobile/greedy-grow-viewer/carousel/
-opengraph_carousel/
-```
+De carousel bevat de didactische uitlegbeelden en voorbeelden.

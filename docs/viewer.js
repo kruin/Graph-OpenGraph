@@ -31,11 +31,23 @@
     showGridInput: document.getElementById('showGridInput'),
     showLabelsInput: document.getElementById('showLabelsInput'),
     showEdgesInput: document.getElementById('showEdgesInput'),
-    showAxesInput: document.getElementById('showAxesInput')
+    showAxesInput: document.getElementById('showAxesInput'),
+    diagonalFreeSelect: document.getElementById('diagonalFreeSelect'),
+    showConflictsInput: document.getElementById('showConflictsInput'),
+    greedyStyleSelect: document.getElementById('greedyStyleSelect'),
+    greedyRuleSelect: document.getElementById('greedyRuleSelect'),
+    angleMinInput: document.getElementById('angleMinInput'),
+    generateLayoutButton: document.getElementById('generateLayoutButton'),
+    restoreLayoutButton: document.getElementById('restoreLayoutButton'),
+    downloadJsonButton: document.getElementById('downloadJsonButton'),
+    configSummary: document.getElementById('configSummary'),
+    constraintStatus: document.getElementById('constraintStatus')
   };
 
   const state = {
     demo: null,
+    originalDemo: null,
+    lastGenerateReport: null,
     step: 0,
     controlsReady: false,
     playing: false,
@@ -56,7 +68,12 @@
       showGrid: true,
       showLabels: true,
       showEdges: false,
-      showAxes: true
+      showAxes: true,
+      diagonalFree: 'none',
+      showConflicts: true,
+      greedyStyle: 'near0',
+      greedyRule: 'collinear',
+      angleMin: 30
     },
     computed: {
       cellSize: 28,
@@ -77,6 +94,68 @@
   function toNumber(value, fallback) {
     const number = Number(value);
     return Number.isFinite(number) ? number : fallback;
+  }
+
+  function normalizeDiagonalFree(value) {
+    const raw = String(value ?? 'none').trim().toLowerCase().replace(/[_\s-]+/g, '');
+    if (raw === 'both' || raw === 'all' || raw === '2' || raw === 'slashbackslash' || raw === 'backslashslash') return 'both';
+    if (raw === 'slash' || raw === '/' || raw === 'xplusy' || raw === 'xyplus') return 'slash';
+    if (raw === 'backslash' || raw === '\\' || raw === 'xminusy' || raw === 'xyminus') return 'backslash';
+    return 'none';
+  }
+
+  function diagonalLabel(value) {
+    const mode = normalizeDiagonalFree(value);
+    if (mode === 'slash') return 'slash /';
+    if (mode === 'backslash') return 'backslash \\';
+    if (mode === 'both') return 'both: / en \\';
+    return 'none';
+  }
+
+
+
+  function normalizeGreedyStyle(value) {
+    const raw = String(value ?? 'near0').trim().toLowerCase().replace(/[_\s-]+/g, '');
+    if (raw === 'maxturn') return 'maxturn';
+    if (raw === 'quadrant' || raw === 'kwadrant') return 'quadrant';
+    if (raw === 'ring') return 'ring';
+    return 'near0';
+  }
+
+  function normalizeGreedyRule(value) {
+    const raw = String(value ?? 'collinear').trim().toLowerCase().replace(/[_\s-]+/g, '');
+    if (raw === 'none' || raw === 'geen') return 'none';
+    if (raw === 'extension' || raw === 'noextension') return 'extension';
+    if (raw === 'angle' || raw.startsWith('angle')) return 'angle';
+    return 'collinear';
+  }
+
+  function deepClone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function demoDiagonalFree(demo = state.demo) {
+    const candidates = [
+      demo?.freedom?.diagonal_free,
+      demo?.constraints?.diagonal_free,
+      demo?.greedy?.diagonal_free,
+      demo?.greedy?.constraints?.diagonal_free,
+      demo?.greedy?.config?.diagonal_free,
+      demo?.config?.diagonal_free,
+      demo?.config?.constraints?.diagonal_free,
+      demo?.source_spec?.constraints?.diagonal_free,
+      demo?.source_spec?.greedy?.diagonal_free
+    ];
+    for (const candidate of candidates) {
+      if (candidate !== undefined && candidate !== null && String(candidate).trim() !== '') return normalizeDiagonalFree(candidate);
+    }
+    return 'none';
+  }
+
+  function formatLineList(values, limit = 6) {
+    const list = [...values].map(String).sort((a, b) => a.localeCompare(b, 'nl', { numeric: true }));
+    if (list.length <= limit) return list.join(', ');
+    return `${list.slice(0, limit).join(', ')} … +${list.length - limit}`;
   }
 
   function orderedNodes(demo = state.demo) {
@@ -203,28 +282,368 @@
     return modelPosition(node);
   }
 
-  function freedomReport(nodes = limitedNodesForMax()) {
-    const seenX = new Map();
-    const seenY = new Map();
-    const duplicateX = new Set();
-    const duplicateY = new Set();
+  function constraintReport(nodes = limitedNodesForMax(), diagonalFree = state.view.diagonalFree) {
+    const mode = normalizeDiagonalFree(diagonalFree);
+    const trackers = {
+      ver: new Map(),       // same x: vertical line conflict
+      hor: new Map(),       // same y: horizontal line conflict
+      slash: new Map(),     // same x+y: / diagonal conflict
+      backslash: new Map()  // same x-y: \ diagonal conflict
+    };
+
+    function add(kind, key, node) {
+      const k = String(key);
+      if (!trackers[kind].has(k)) trackers[kind].set(k, []);
+      trackers[kind].get(k).push(node);
+    }
+
     for (const node of nodes) {
       const p = freedomCoordinate(node);
-      const xKey = String(p.x);
-      const yKey = String(p.y);
-      if (seenX.has(xKey)) duplicateX.add(xKey);
-      else seenX.set(xKey, node.id);
-      if (seenY.has(yKey)) duplicateY.add(yKey);
-      else seenY.set(yKey, node.id);
+      add('ver', p.x, node);
+      add('hor', p.y, node);
+      add('slash', p.x + p.y, node);
+      add('backslash', p.x - p.y, node);
     }
+
+    const activeKinds = ['ver', 'hor'];
+    if (mode === 'slash' || mode === 'both') activeKinds.push('slash');
+    if (mode === 'backslash' || mode === 'both') activeKinds.push('backslash');
+
+    const conflictKeys = { ver: new Set(), hor: new Set(), slash: new Set(), backslash: new Set() };
+    const conflictsByNode = new Map();
+    for (const kind of activeKinds) {
+      for (const [key, group] of trackers[kind].entries()) {
+        if (group.length <= 1) continue;
+        conflictKeys[kind].add(key);
+        for (const node of group) {
+          const id = String(node.id);
+          if (!conflictsByNode.has(id)) conflictsByNode.set(id, new Set());
+          conflictsByNode.get(id).add(kind);
+        }
+      }
+    }
+
+    const duplicateCount = kind => conflictKeys[kind].size;
+    const activeConflictCount = activeKinds.reduce((sum, kind) => sum + duplicateCount(kind), 0);
     return {
-      ok: duplicateX.size === 0 && duplicateY.size === 0,
-      duplicateXCount: duplicateX.size,
-      duplicateYCount: duplicateY.size,
-      xLines: seenX.size,
-      yLines: seenY.size,
-      nodeCount: nodes.length
+      ok: activeConflictCount === 0,
+      mode,
+      activeKinds,
+      nodeCount: nodes.length,
+      lineCount: {
+        ver: trackers.ver.size,
+        hor: trackers.hor.size,
+        slash: trackers.slash.size,
+        backslash: trackers.backslash.size
+      },
+      conflicts: {
+        ver: duplicateCount('ver'),
+        hor: duplicateCount('hor'),
+        slash: duplicateCount('slash'),
+        backslash: duplicateCount('backslash')
+      },
+      conflictKeys,
+      conflictsByNode,
+      activeConflictCount
     };
+  }
+
+  function constraintShortText(report) {
+    if (!report) return 'geen constraintcontrole';
+    const parts = [
+      `HOR=${report.conflicts.hor}`,
+      `VER=${report.conflicts.ver}`
+    ];
+    if (report.mode === 'slash' || report.mode === 'both') parts.push(`/=${report.conflicts.slash}`);
+    if (report.mode === 'backslash' || report.mode === 'both') parts.push(`\\=${report.conflicts.backslash}`);
+    return report.ok ? `${diagonalLabel(report.mode)} vrij` : `conflict ${parts.join(', ')}`;
+  }
+
+  function constraintLongText(report, scopeLabel) {
+    if (!report) return 'Geen constraintcontrole beschikbaar.';
+    const base = `${scopeLabel}: ${report.nodeCount} knopen · diagonal_free=${diagonalLabel(report.mode)} · lijnen HOR=${report.lineCount.hor}, VER=${report.lineCount.ver}`;
+    const diag = report.mode === 'none'
+      ? ''
+      : `, /=${report.lineCount.slash}, \\=${report.lineCount.backslash}`;
+    if (report.ok) return `${base}${diag} · vrij.`;
+    const details = [];
+    if (report.conflicts.hor) details.push(`HOR y=[${formatLineList(report.conflictKeys.hor)}]`);
+    if (report.conflicts.ver) details.push(`VER x=[${formatLineList(report.conflictKeys.ver)}]`);
+    if (report.conflicts.slash) details.push(`/ x+y=[${formatLineList(report.conflictKeys.slash)}]`);
+    if (report.conflicts.backslash) details.push(`\\ x-y=[${formatLineList(report.conflictKeys.backslash)}]`);
+    return `${base}${diag} · conflict: ${details.join(' · ')}.`;
+  }
+
+
+
+  function point(x, y) { return { x, y }; }
+  function vec(a, b) { return point(b.x - a.x, b.y - a.y); }
+  function cross(v1, v2) { return v1.x * v2.y - v1.y * v2.x; }
+  function dot(v1, v2) { return v1.x * v2.x + v1.y * v2.y; }
+  function collinear(v1, v2) { return cross(v1, v2) === 0; }
+  function sameDirection(v1, v2) { return collinear(v1, v2) && dot(v1, v2) > 0; }
+  function slashValue(p) { return p.x + p.y; }
+  function backslashValue(p) { return p.x - p.y; }
+
+  function angleDegrees(v1, v2) {
+    const n1 = Math.hypot(v1.x, v1.y);
+    const n2 = Math.hypot(v2.x, v2.y);
+    if (!n1 || !n2) return 0;
+    const c = clamp(dot(v1, v2) / (n1 * n2), -1, 1);
+    return Math.acos(c) * 180 / Math.PI;
+  }
+
+  function quadrant(p) {
+    if (p.x >= 0 && p.y < 0) return 0;
+    if (p.x < 0 && p.y < 0) return 1;
+    if (p.x < 0 && p.y >= 0) return 2;
+    return 3;
+  }
+
+  function candidatePool(limit) {
+    const n = Math.max(1, Math.floor(toNumber(limit, 1)));
+    const list = [];
+    for (let x = -n; x <= n; x++) {
+      for (let y = -n; y <= n; y++) {
+        if (x !== 0 || y !== 0) list.push(point(x, y));
+      }
+    }
+    return list;
+  }
+
+  function compareKeys(a, b) {
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      if (a[i] < b[i]) return -1;
+      if (a[i] > b[i]) return 1;
+    }
+    return a.length - b.length;
+  }
+
+  function candidateKey(style, p, points, prevDir) {
+    const prev = points[points.length - 1];
+    const nd = vec(prev, p);
+    const d0 = p.x * p.x + p.y * p.y;
+    const step = nd.x * nd.x + nd.y * nd.y;
+    const angle = prevDir ? angleDegrees(prevDir, nd) : 90;
+    const angle90 = Math.abs(angle - 90);
+    const q = quadrant(p);
+    const normalizedStyle = normalizeGreedyStyle(style);
+    if (normalizedStyle === 'maxturn') return [-angle, d0, step, q, p.y, p.x];
+    if (normalizedStyle === 'quadrant') {
+      const counts = [0, 0, 0, 0];
+      for (const node of points) counts[quadrant(node)]++;
+      const seq = [0, 2, 1, 3, 0, 3, 1, 2];
+      const target = seq[(points.length - 1) % seq.length];
+      return [q === target ? 0 : 1, counts[q], d0, angle90, step, p.y, p.x];
+    }
+    if (normalizedStyle === 'ring') {
+      const radius = Math.max(Math.abs(p.x), Math.abs(p.y));
+      return [radius, step, angle90, q, p.y, p.x];
+    }
+    return [d0, angle90, step, q, p.y, p.x];
+  }
+
+  function diagonalCandidateFree(mode, p, usedSlash, usedBackslash) {
+    const normalized = normalizeDiagonalFree(mode);
+    if (normalized === 'none') return true;
+    if (normalized === 'slash') return !usedSlash.has(slashValue(p));
+    if (normalized === 'backslash') return !usedBackslash.has(backslashValue(p));
+    return !usedSlash.has(slashValue(p)) && !usedBackslash.has(backslashValue(p));
+  }
+
+  function forbiddenByRule(rule, prevDir, newDir, angleMin) {
+    if (!prevDir) return false;
+    const normalized = normalizeGreedyRule(rule);
+    if (normalized === 'none') return false;
+    if (normalized === 'extension') return sameDirection(prevDir, newDir);
+    if (normalized === 'collinear') return collinear(prevDir, newDir);
+    const angle = angleDegrees(prevDir, newDir);
+    return angle < angleMin || angle > (180 - angleMin);
+  }
+
+  function orient(a, b, c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  }
+
+  function onSegment(a, b, c) {
+    return Math.min(a.x, b.x) <= c.x && c.x <= Math.max(a.x, b.x) &&
+           Math.min(a.y, b.y) <= c.y && c.y <= Math.max(a.y, b.y) &&
+           orient(a, b, c) === 0;
+  }
+
+  function segmentsIntersect(a, b, c, d) {
+    const o1 = orient(a, b, c);
+    const o2 = orient(a, b, d);
+    const o3 = orient(c, d, a);
+    const o4 = orient(c, d, b);
+    if (o1 === 0 && onSegment(a, b, c)) return true;
+    if (o2 === 0 && onSegment(a, b, d)) return true;
+    if (o3 === 0 && onSegment(c, d, a)) return true;
+    if (o4 === 0 && onSegment(c, d, b)) return true;
+    return (o1 > 0) !== (o2 > 0) && (o3 > 0) !== (o4 > 0);
+  }
+
+  function lineFree(points, candidate) {
+    const a = points[points.length - 1];
+    const b = candidate;
+    for (let i = 0; i < points.length - 1; i++) {
+      if (onSegment(a, b, points[i])) return false;
+    }
+    for (let i = 0; i < points.length - 2; i++) {
+      if (segmentsIntersect(a, b, points[i], points[i + 1])) return false;
+    }
+    return true;
+  }
+
+  function generateGreedyPoints(spec) {
+    const count = Math.max(1, Math.floor(toNumber(spec.count, 1)));
+    const noLimit = !!spec.noLimit;
+    let generationMax = Math.max(1, Math.floor(toNumber(spec.max, Math.max(1, Math.ceil((count - 1) / 2)))));
+    const needed = Math.max(0, Math.floor((count - 1) / 2));
+    if (noLimit) generationMax = Math.max(generationMax, needed);
+    if (!noLimit && count > 2 * generationMax + 1) {
+      throw new Error(`count=${count} past niet in max=${generationMax} met unieke HOR/VER-lijnen. Zet No limit aan of verhoog Max knopen.`);
+    }
+
+    const stats = { tested: 0, rejectedRowCol: 0, rejectedDiagonal: 0, rejectedRule: 0, rejectedLine: 0, expansions: 0 };
+    const points = [point(0, 0)];
+    const usedX = new Set([0]);
+    const usedY = new Set([0]);
+    const usedSlash = new Set([0]);
+    const usedBackslash = new Set([0]);
+    let pool = candidatePool(generationMax);
+
+    while (points.length < count) {
+      const prev = points[points.length - 1];
+      const prevDir = points.length < 2 ? null : vec(points[points.length - 2], prev);
+      pool.sort((a, b) => compareKeys(candidateKey(spec.style, a, points, prevDir), candidateKey(spec.style, b, points, prevDir)));
+      let placed = false;
+      for (const p of pool) {
+        stats.tested++;
+        if (usedX.has(p.x) || usedY.has(p.y)) { stats.rejectedRowCol++; continue; }
+        if (!diagonalCandidateFree(spec.diagonalFree, p, usedSlash, usedBackslash)) { stats.rejectedDiagonal++; continue; }
+        const newDir = vec(prev, p);
+        if (forbiddenByRule(spec.rule, prevDir, newDir, spec.angleMin)) { stats.rejectedRule++; continue; }
+        if (!lineFree(points, p)) { stats.rejectedLine++; continue; }
+        points.push(p);
+        usedX.add(p.x);
+        usedY.add(p.y);
+        usedSlash.add(slashValue(p));
+        usedBackslash.add(backslashValue(p));
+        placed = true;
+        break;
+      }
+      if (!placed) {
+        if (noLimit && generationMax < 10000) {
+          generationMax = Math.max(generationMax + 1, generationMax * 2);
+          pool = candidatePool(generationMax);
+          stats.expansions++;
+          continue;
+        }
+        throw new Error(`Geen geldig kandidaatpunt na ${points.length} knopen. Gebruik No limit, grotere Max of zwakkere constraints.`);
+      }
+    }
+    return { points, generationMax, stats };
+  }
+
+  function layoutTargetNodes() {
+    return limitedNodesForMax();
+  }
+
+  function currentGenerationSpec(count) {
+    return {
+      count,
+      max: Math.max(1, Math.floor(toNumber(state.view.maxNodes, 30))),
+      noLimit: !!state.view.noLimit,
+      diagonalFree: normalizeDiagonalFree(state.view.diagonalFree),
+      style: normalizeGreedyStyle(state.view.greedyStyle),
+      rule: normalizeGreedyRule(state.view.greedyRule),
+      angleMin: clamp(Math.floor(toNumber(state.view.angleMin, 30)), 0, 89)
+    };
+  }
+
+  function generateBrowserLayout() {
+    if (!state.demo) return;
+    applyConfigFromControls(false);
+    const targets = layoutTargetNodes();
+    const spec = currentGenerationSpec(targets.length);
+    let generated;
+    try {
+      generated = generateGreedyPoints(spec);
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
+
+    const generatedById = new Map();
+    targets.forEach((node, index) => generatedById.set(String(node.id), generated.points[index]));
+    state.demo.nodes = state.demo.nodes.map(node => {
+      const p = generatedById.get(String(node.id));
+      if (!p) return node;
+      return {
+        ...node,
+        model: { x: p.x, y: p.y },
+        source: { x: p.x, y: p.y },
+        source_x: p.x,
+        source_y: p.y,
+        grid: { x: p.x, y: p.y },
+        generated_by: 'browser-greedy-v4350'
+      };
+    });
+    state.demo.constraints = { ...(state.demo.constraints || {}), hor_ver_free: true, diagonal_free: spec.diagonalFree };
+    state.demo.freedom = { ...(state.demo.freedom || {}), hor_ver_free: true, x_line_unique: true, y_line_unique: true, diagonal_free: spec.diagonalFree };
+    state.demo.greedy = {
+      ...(state.demo.greedy || {}),
+      style: spec.style,
+      rule: spec.rule,
+      angle_min: spec.angleMin,
+      diagonal_free: spec.diagonalFree,
+      count: targets.length,
+      config_count: targets.length,
+      max: spec.max,
+      generation_max: generated.generationMax,
+      no_limit: spec.noLimit,
+      browser_generated: true,
+      engine: 'browser-js-v4350',
+      layout_scope: spec.noLimit ? 'all-nodes' : 'limited-nodes'
+    };
+    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4350';
+    state.lastGenerateReport = { ...generated.stats, generationMax: generated.generationMax, count: targets.length, style: spec.style, rule: spec.rule, diagonalFree: spec.diagonalFree };
+    state.undoStack = [];
+    state.redoStack = [];
+    if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
+    render();
+  }
+
+  function restoreJsonLayout() {
+    if (!state.originalDemo) return;
+    const currentView = { ...state.view };
+    state.demo = validateDemo(deepClone(state.originalDemo));
+    state.view = { ...state.view, ...currentView };
+    state.lastGenerateReport = null;
+    if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
+    syncConfigControls();
+    render();
+  }
+
+  function safeDownloadName() {
+    const stem = state.demo?.project?.stem || state.demo?.greedy?.stem || state.demo?.project?.name || 'opengraph_greedy_grow';
+    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4350.json`;
+  }
+
+  function downloadCurrentJson() {
+    if (!state.demo) return;
+    const payload = JSON.stringify(state.demo, null, 2);
+    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = safeDownloadName();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   function sourceNodesForBounds(nodes, useAllForStatic = false) {
@@ -326,7 +745,8 @@
       els.firstButton, els.prevButton, els.playButton, els.nextButton, els.lastButton,
       els.fitButton, els.stepRange, els.undoButton, els.redoButton, els.resetViewButton,
       els.maxNodesInput, els.noLimitInput, els.autoSizeInput, els.nodeSizeInput, els.cellSizeInput, els.intervalInput,
-      els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput
+      els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput,
+      els.diagonalFreeSelect, els.showConflictsInput, els.greedyStyleSelect, els.greedyRuleSelect, els.angleMinInput, els.generateLayoutButton, els.restoreLayoutButton, els.downloadJsonButton
     ];
     for (const input of inputs) if (input) input.disabled = !enabled;
   }
@@ -368,11 +788,12 @@
     });
     return {
       format: 'opengraph-greedy-grow-demo',
-      format_version: 7,
+      format_version: 8,
       title,
       project: { name: 'opengraph-greedy-grow', language: 'nl', stem },
       grid: { rows: 35, columns: 35, cell_width: 28, cell_height: 28, origin: { x: 0, y: 0 }, fit_content: true, grow_with_step: true, show_grid: true, show_axes_through_origin: true, major_every: 5, margin: 2 },
       freedom: { hor_ver_free: true, x_line_unique: true, y_line_unique: true, diagonal_free: 'none' },
+      constraints: { hor_ver_free: true, diagonal_free: 'none' },
       greedy: { count: coords.length, config_count: coords.length, max, generation_max: coords.length, no_limit: noLimit, style: 'free-hor-ver-demo', rule: 'hor-ver-free' },
       grow: { interval_ms: 700, start_step: 0, auto_start: false, reveal_edges: 'when_both_nodes_visible', stop_at_end: true, loop: false, undo_redo_per_step: true, last_step_equals_static: true },
       style: { node_radius: 6, show_labels: true, show_edges: false, auto_size: true, free_nodes: true, hor_ver_free: true },
@@ -390,6 +811,8 @@
     demo.grow = demo.grow && typeof demo.grow === 'object' ? { ...demo.grow } : {};
     demo.greedy = demo.greedy && typeof demo.greedy === 'object' ? { ...demo.greedy } : {};
     demo.style = demo.style && typeof demo.style === 'object' ? { ...demo.style } : {};
+    demo.freedom = demo.freedom && typeof demo.freedom === 'object' ? { ...demo.freedom } : {};
+    demo.constraints = demo.constraints && typeof demo.constraints === 'object' ? { ...demo.constraints } : {};
     demo.nodes = Array.isArray(demo.nodes) ? demo.nodes.map((node, index) => {
       const id = String(node.id ?? node.name ?? `n${index}`);
       const step = toNumber(node.step ?? node.order, index);
@@ -418,6 +841,8 @@
     if (typeof demo.style.auto_size !== 'boolean') demo.style.auto_size = true;
     if (typeof demo.style.show_edges !== 'boolean') demo.style.show_edges = false;
     if (typeof demo.style.free_nodes !== 'boolean') demo.style.free_nodes = true;
+    demo.constraints.diagonal_free = demoDiagonalFree(demo);
+    demo.freedom.diagonal_free = demo.constraints.diagonal_free;
     return demo;
   }
 
@@ -435,6 +860,11 @@
     state.view.showLabels = demo.style?.show_labels !== false;
     state.view.showEdges = demo.style?.show_edges === true;
     state.view.showAxes = demo.grid?.show_axes_through_origin !== false;
+    state.view.diagonalFree = demoDiagonalFree(demo);
+    state.view.showConflicts = true;
+    state.view.greedyStyle = normalizeGreedyStyle(demo.greedy?.style);
+    state.view.greedyRule = normalizeGreedyRule(demo.greedy?.rule);
+    state.view.angleMin = clamp(Math.floor(toNumber(demo.greedy?.angle_min ?? demo.constraints?.angle_min, 30)), 0, 89);
     syncConfigControls();
   }
 
@@ -454,6 +884,11 @@
     els.showLabelsInput.checked = !!state.view.showLabels;
     if (els.showEdgesInput) els.showEdgesInput.checked = !!state.view.showEdges;
     els.showAxesInput.checked = !!state.view.showAxes;
+    if (els.diagonalFreeSelect) els.diagonalFreeSelect.value = normalizeDiagonalFree(state.view.diagonalFree);
+    if (els.showConflictsInput) els.showConflictsInput.checked = !!state.view.showConflicts;
+    if (els.greedyStyleSelect) els.greedyStyleSelect.value = normalizeGreedyStyle(state.view.greedyStyle);
+    if (els.greedyRuleSelect) els.greedyRuleSelect.value = normalizeGreedyRule(state.view.greedyRule);
+    if (els.angleMinInput) els.angleMinInput.value = String(clamp(Math.floor(toNumber(state.view.angleMin, 30)), 0, 89));
   }
 
   function drawGrid(group, bounds) {
@@ -497,6 +932,8 @@
     const nodes = visibleNodes();
     const nodeIds = new Set(nodes.map(n => n.id));
     const edges = visibleEdges(nodeIds);
+    const visibleConstraints = constraintReport(nodes);
+    const allConstraints = constraintReport(limitedNodesForMax());
     const allNodesById = new Map((demo.nodes || []).map(n => [n.id, n]));
     const bounds = layoutBounds(nodes, !state.view.growGrid);
     setViewBox(bounds);
@@ -524,7 +961,14 @@
     const fontSize = clamp(toNumber(state.computed.fontSize, 7), 4, 18);
     for (const node of nodes) {
       const p = nodePosition(node);
-      circleG.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: radius, class: 'node' }));
+      const conflictKinds = visibleConstraints.conflictsByNode.get(String(node.id));
+      const nodeClass = state.view.showConflicts && conflictKinds ? 'node conflict-node' : 'node';
+      const nodeCircle = svgEl('circle', { cx: p.x, cy: p.y, r: radius, class: nodeClass });
+      if (conflictKinds) nodeCircle.appendChild(svgEl('title', {}, `Conflict: ${[...conflictKinds].join(', ')}`));
+      circleG.appendChild(nodeCircle);
+      if (state.view.showConflicts && conflictKinds) {
+        highlightG.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: radius + Math.max(2.2, radius * 0.36), class: 'conflict-ring' }));
+      }
       if (node.id === currentNodeId) {
         // Highlight is a separate outside ring. The actual node circle keeps
         // exactly the same radius as every other free node.
@@ -558,6 +1002,8 @@
       els.stepHeading.textContent = 'Stap';
       els.stepText.textContent = 'Technische startdemo wordt geladen. Gebruik de carousel voor uitlegbeelden.';
       els.metaLine.textContent = 'Wacht op een geldige Greedy Grow JSON-demo.';
+      if (els.configSummary) els.configSummary.textContent = 'Greedy-config wordt geladen.';
+      if (els.constraintStatus) { els.constraintStatus.textContent = 'Conflictcontrole wordt geladen.'; els.constraintStatus.className = 'constraint-status neutral'; }
       els.playButton.textContent = '▶';
       return;
     }
@@ -577,9 +1023,25 @@
       ? `auto-size · cel≈${Math.round(state.computed.apparentCellPx)}px · knoop≈${Math.round(state.computed.nodeRadius * state.computed.apparentCellPx / state.computed.cellSize)}px`
       : `manual · cel ${state.view.cellSize} · knoop ${state.view.nodeRadius}`;
     const topologyText = state.view.showEdges ? (hasInferredEdgesVisible() ? 'groeilijnen afgeleid' : 'JSON-lijnen aan') : 'vrije bronknopen';
-    const freedom = freedomReport(limitedNodesForMax());
-    const freedomText = freedom.ok ? 'HOR/VER vrij' : `HOR/VER-conflict: x=${freedom.duplicateXCount}, y=${freedom.duplicateYCount}`;
-    els.metaLine.textContent = `${count} / ${total} knopen zichtbaar · ${topologyText} · ${freedomText} · ${limitText} · raw ${rawMax} · ${sizeText} · interval ${intervalMs()} ms · ${state.playing ? 'grow-mode' : 'handmatig'}`;
+    const visibleConstraints = constraintReport(visibleNodes());
+    const allConstraints = constraintReport(limitedNodesForMax());
+    const constraintText = constraintShortText(allConstraints);
+    const greedyBits = [];
+    if (demo.greedy?.style) greedyBits.push(`style=${demo.greedy.style}`);
+    if (demo.greedy?.rule) greedyBits.push(`rule=${demo.greedy.rule}`);
+    if (demo.greedy?.generation_max !== undefined) greedyBits.push(`generation_max=${demo.greedy.generation_max}`);
+    if (demo.greedy?.count !== undefined) greedyBits.push(`count=${demo.greedy.count}`);
+    if (els.configSummary) {
+      const browserBits = [`browser=${normalizeGreedyStyle(state.view.greedyStyle)}`, `rule=${normalizeGreedyRule(state.view.greedyRule)}`];
+      if (normalizeGreedyRule(state.view.greedyRule) === 'angle') browserBits.push(`angle_min=${state.view.angleMin}`);
+      if (state.lastGenerateReport) browserBits.push(`gegenereerd=${state.lastGenerateReport.count}`, `tested=${state.lastGenerateReport.tested}`);
+      els.configSummary.textContent = `Greedy-config: ${limitText} · diagonal_free=${diagonalLabel(state.view.diagonalFree)} · ${browserBits.join(' · ')}${greedyBits.length ? ' · bron: ' + greedyBits.join(' · ') : ''}.`;
+    }
+    if (els.constraintStatus) {
+      els.constraintStatus.textContent = `${constraintLongText(visibleConstraints, 'Zichtbaar')} ${constraintLongText(allConstraints, 'Gelimiteerd totaal')}`;
+      els.constraintStatus.className = `constraint-status ${allConstraints.ok && visibleConstraints.ok ? 'ok' : (visibleConstraints.ok ? 'warn' : 'conflict')}`;
+    }
+    els.metaLine.textContent = `${count} / ${total} knopen zichtbaar · ${topologyText} · ${constraintText} · ${limitText} · raw ${rawMax} · ${sizeText} · interval ${intervalMs()} ms · ${state.playing ? 'grow-mode' : 'handmatig'}`;
     els.playButton.textContent = state.playing ? '⏸' : '▶';
     els.undoButton.disabled = !state.undoStack.length;
     els.redoButton.disabled = !state.redoStack.length;
@@ -665,6 +1127,8 @@
   function setDemo(demo) {
     stopPlaying(false);
     state.demo = validateDemo(demo);
+    state.originalDemo = deepClone(state.demo);
+    state.lastGenerateReport = null;
     applyDemoDefaultsToView(state.demo);
     state.step = clamp(toNumber(state.demo.grow?.start_step, 0), 0, effectiveMaxStep(state.demo));
     state.undoStack = [];
@@ -680,7 +1144,7 @@
     setDemo(validateDemo(raw));
   }
 
-  function applyConfigFromControls() {
+  function applyConfigFromControls(shouldRender = true) {
     const oldNoLimit = !!state.view.noLimit;
     state.view.noLimit = !!els.noLimitInput.checked;
     if (!state.view.noLimit && oldNoLimit && Math.floor(toNumber(els.maxNodesInput.value, state.view.maxNodes)) >= totalNodes()) {
@@ -698,8 +1162,14 @@
     state.view.showLabels = !!els.showLabelsInput.checked;
     state.view.showEdges = els.showEdgesInput ? !!els.showEdgesInput.checked : false;
     state.view.showAxes = !!els.showAxesInput.checked;
+    state.view.diagonalFree = els.diagonalFreeSelect ? normalizeDiagonalFree(els.diagonalFreeSelect.value) : 'none';
+    state.view.showConflicts = els.showConflictsInput ? !!els.showConflictsInput.checked : true;
+    state.view.greedyStyle = els.greedyStyleSelect ? normalizeGreedyStyle(els.greedyStyleSelect.value) : 'near0';
+    state.view.greedyRule = els.greedyRuleSelect ? normalizeGreedyRule(els.greedyRuleSelect.value) : 'collinear';
+    state.view.angleMin = els.angleMinInput ? clamp(Math.floor(toNumber(els.angleMinInput.value, state.view.angleMin)), 0, 89) : 30;
     syncConfigControls();
     if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
+    if (!shouldRender) return;
     if (state.playing) { stopPlaying(false); startPlaying(); }
     else render();
   }
@@ -726,6 +1196,9 @@
     els.playButton.addEventListener('click', togglePlaying);
     els.fitButton.addEventListener('click', fitView);
     els.resetViewButton.addEventListener('click', resetViewSettings);
+    if (els.generateLayoutButton) els.generateLayoutButton.addEventListener('click', generateBrowserLayout);
+    if (els.restoreLayoutButton) els.restoreLayoutButton.addEventListener('click', restoreJsonLayout);
+    if (els.downloadJsonButton) els.downloadJsonButton.addEventListener('click', downloadCurrentJson);
     els.stepRange.addEventListener('input', event => setStep(event.target.value));
     els.fileInput.addEventListener('change', event => {
       const file = event.target.files?.[0];
@@ -733,7 +1206,8 @@
       loadFile(file).catch(err => alert(err.message));
     });
 
-    [els.maxNodesInput, els.noLimitInput, els.autoSizeInput, els.nodeSizeInput, els.cellSizeInput, els.intervalInput, els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput].filter(Boolean).forEach(input => {
+    [els.maxNodesInput, els.noLimitInput, els.autoSizeInput, els.nodeSizeInput, els.cellSizeInput, els.intervalInput, els.growGridInput, els.showGridInput, els.showLabelsInput, els.showEdgesInput, els.showAxesInput,
+      els.diagonalFreeSelect, els.showConflictsInput, els.greedyStyleSelect, els.greedyRuleSelect, els.angleMinInput].filter(Boolean).forEach(input => {
       input.addEventListener('input', applyConfigFromControls);
       input.addEventListener('change', applyConfigFromControls);
     });

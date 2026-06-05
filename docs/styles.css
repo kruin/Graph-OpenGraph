@@ -13,6 +13,9 @@
   --node-line: #0f172a;
   --edge: #334155;
   --current: #ef4444;
+  --conflict: #dc2626;
+  --ok: #15803d;
+  --warn: #b45309;
   --visible-shadow: rgba(15, 23, 42, 0.18);
 }
 
@@ -31,6 +34,9 @@
     --node-line: #e5e7eb;
     --edge: #cbd5e1;
     --current: #f87171;
+    --conflict: #f87171;
+    --ok: #86efac;
+    --warn: #fbbf24;
     --visible-shadow: rgba(226, 232, 240, 0.18);
   }
 }
@@ -152,7 +158,8 @@ button:disabled { opacity: 0.45; }
   font-size: 0.86rem;
   font-weight: 650;
 }
-.control-grid input[type="number"] {
+.control-grid input[type="number"],
+.control-grid select {
   width: 100%;
   min-height: 2.2rem;
   border: 1px solid var(--line);
@@ -169,6 +176,39 @@ button:disabled { opacity: 0.45; }
   color: var(--text) !important;
 }
 .checkline input { width: 1rem; height: 1rem; }
+.config-summary,
+.constraint-status,
+.inline-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.config-summary {
+  border-top: 1px solid var(--line);
+  padding-top: 0.55rem;
+}
+.constraint-status {
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  padding: 0.45rem 0.55rem;
+  background: color-mix(in srgb, var(--panel), var(--bg) 45%);
+  font-weight: 700;
+}
+.constraint-status.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok), var(--line) 45%); }
+.constraint-status.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn), var(--line) 45%); }
+.constraint-status.conflict { color: var(--conflict); border-color: color-mix(in srgb, var(--conflict), var(--line) 35%); }
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.4rem;
+}
+.action-row button {
+  min-height: 2.35rem;
+  font-size: 0.86rem;
+}
+
 
 .canvas-wrap {
   min-height: 54vh;
@@ -198,6 +238,8 @@ button:disabled { opacity: 0.45; }
 .axis { stroke: var(--line); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
 .edge { stroke: var(--edge); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .node { fill: var(--node); stroke: var(--node-line); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+.node.conflict-node { stroke: var(--conflict); stroke-width: 2.4; }
+.conflict-ring { fill: none; stroke: var(--conflict); stroke-width: 2; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; pointer-events: none; }
 .node-label { fill: var(--text); font-size: 10px; font-weight: 750; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 .current-ring { fill: none; stroke: var(--current); stroke-width: 2.2; vector-effect: non-scaling-stroke; pointer-events: none; }
 .step-caption { fill: var(--muted); font-size: 12px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
@@ -291,3 +333,7 @@ button:disabled { opacity: 0.45; }
   text-decoration: none;
 }
 .button-link:active { transform: translateY(1px); }
+
+@media (min-width: 720px) {
+  .action-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
