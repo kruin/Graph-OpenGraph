@@ -40,6 +40,10 @@
     generateLayoutButton: document.getElementById('generateLayoutButton'),
     restoreLayoutButton: document.getElementById('restoreLayoutButton'),
     downloadJsonButton: document.getElementById('downloadJsonButton'),
+    topGenerateLayoutButton: document.getElementById('topGenerateLayoutButton'),
+    topRestoreLayoutButton: document.getElementById('topRestoreLayoutButton'),
+    topDownloadJsonButton: document.getElementById('topDownloadJsonButton'),
+    actionFeedback: document.getElementById('actionFeedback'),
     configSummary: document.getElementById('configSummary'),
     constraintStatus: document.getElementById('constraintStatus')
   };
@@ -48,6 +52,7 @@
     demo: null,
     originalDemo: null,
     lastGenerateReport: null,
+    actionNotice: { level: 'neutral', text: 'Klaar om te testen. Gebruik Genereer layout bovenaan; de viewer springt daarna automatisch naar het eindbeeld.' },
     step: 0,
     controlsReady: false,
     playing: false,
@@ -563,6 +568,17 @@
     };
   }
 
+  function setActionNotice(level, text) {
+    state.actionNotice = { level: level || 'neutral', text: text || '' };
+  }
+
+  function showActionNotice() {
+    if (!els.actionFeedback) return;
+    const notice = state.actionNotice || { level: 'neutral', text: '' };
+    els.actionFeedback.textContent = notice.text || '—';
+    els.actionFeedback.className = `action-feedback ${notice.level || 'neutral'}`;
+  }
+
   function generateBrowserLayout() {
     if (!state.demo) return;
     applyConfigFromControls(false);
@@ -572,6 +588,8 @@
     try {
       generated = generateGreedyPoints(spec);
     } catch (err) {
+      setActionNotice('conflict', `Geen layout gegenereerd: ${err.message}`);
+      render();
       alert(err.message);
       return;
     }
@@ -588,7 +606,7 @@
         source_x: p.x,
         source_y: p.y,
         grid: { x: p.x, y: p.y },
-        generated_by: 'browser-greedy-v4350'
+        generated_by: 'browser-greedy-v4351'
       };
     });
     state.demo.constraints = { ...(state.demo.constraints || {}), hor_ver_free: true, diagonal_free: spec.diagonalFree };
@@ -605,14 +623,15 @@
       generation_max: generated.generationMax,
       no_limit: spec.noLimit,
       browser_generated: true,
-      engine: 'browser-js-v4350',
+      engine: 'browser-js-v4351',
       layout_scope: spec.noLimit ? 'all-nodes' : 'limited-nodes'
     };
-    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4350';
+    state.demo.title = (state.demo.title || 'JAN Open Notation Viewer').replace(/ \u2014 browser-generated.*$/, '') + ' — browser-generated v4351';
     state.lastGenerateReport = { ...generated.stats, generationMax: generated.generationMax, count: targets.length, style: spec.style, rule: spec.rule, diagonalFree: spec.diagonalFree };
     state.undoStack = [];
     state.redoStack = [];
-    if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
+    state.step = effectiveMaxStep();
+    setActionNotice('ok', `Layout gegenereerd: ${targets.length} knopen · diagonal_free=${diagonalLabel(spec.diagonalFree)} · style=${spec.style} · rule=${spec.rule} · getest=${generated.stats.tested}. Eindbeeld wordt getoond.`);
     render();
   }
 
@@ -623,13 +642,14 @@
     state.view = { ...state.view, ...currentView };
     state.lastGenerateReport = null;
     if (state.step > effectiveMaxStep()) state.step = effectiveMaxStep();
+    setActionNotice('neutral', 'Originele JSON-layout hersteld. Gebruik Genereer layout om opnieuw te testen.');
     syncConfigControls();
     render();
   }
 
   function safeDownloadName() {
     const stem = state.demo?.project?.stem || state.demo?.greedy?.stem || state.demo?.project?.name || 'opengraph_greedy_grow';
-    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4350.json`;
+    return `${String(stem).replace(/[^A-Za-z0-9._-]+/g, '_')}_viewer_v4351.json`;
   }
 
   function downloadCurrentJson() {
@@ -644,6 +664,8 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    setActionNotice('ok', `JSON gedownload: ${a.download}`);
+    render();
   }
 
   function sourceNodesForBounds(nodes, useAllForStatic = false) {
@@ -1005,6 +1027,7 @@
       if (els.configSummary) els.configSummary.textContent = 'Greedy-config wordt geladen.';
       if (els.constraintStatus) { els.constraintStatus.textContent = 'Conflictcontrole wordt geladen.'; els.constraintStatus.className = 'constraint-status neutral'; }
       els.playButton.textContent = '▶';
+      showActionNotice();
       return;
     }
     const max = effectiveMaxStep(demo);
@@ -1043,6 +1066,7 @@
     }
     els.metaLine.textContent = `${count} / ${total} knopen zichtbaar · ${topologyText} · ${constraintText} · ${limitText} · raw ${rawMax} · ${sizeText} · interval ${intervalMs()} ms · ${state.playing ? 'grow-mode' : 'handmatig'}`;
     els.playButton.textContent = state.playing ? '⏸' : '▶';
+    showActionNotice();
     els.undoButton.disabled = !state.undoStack.length;
     els.redoButton.disabled = !state.redoStack.length;
     syncConfigControls();
@@ -1199,6 +1223,9 @@
     if (els.generateLayoutButton) els.generateLayoutButton.addEventListener('click', generateBrowserLayout);
     if (els.restoreLayoutButton) els.restoreLayoutButton.addEventListener('click', restoreJsonLayout);
     if (els.downloadJsonButton) els.downloadJsonButton.addEventListener('click', downloadCurrentJson);
+    if (els.topGenerateLayoutButton) els.topGenerateLayoutButton.addEventListener('click', generateBrowserLayout);
+    if (els.topRestoreLayoutButton) els.topRestoreLayoutButton.addEventListener('click', restoreJsonLayout);
+    if (els.topDownloadJsonButton) els.topDownloadJsonButton.addEventListener('click', downloadCurrentJson);
     els.stepRange.addEventListener('input', event => setStep(event.target.value));
     els.fileInput.addEventListener('change', event => {
       const file = event.target.files?.[0];

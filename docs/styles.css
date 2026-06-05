@@ -337,3 +337,40 @@ button:disabled { opacity: 0.45; }
 @media (min-width: 720px) {
   .action-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+
+/* v4351: generator-acties direct zichtbaar maken */
+.toolbar .primary-action {
+  font-weight: 800;
+  border-color: #334155;
+  background: #e2e8f0;
+}
+
+.action-feedback {
+  margin-top: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.8rem;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.94rem;
+  line-height: 1.35;
+}
+
+.action-feedback.ok {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.action-feedback.warn {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.action-feedback.conflict {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
