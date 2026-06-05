@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>JAN Carousel v4348</title>
+  <link rel="stylesheet" href="carousel.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">JAN · Open Notation</div>
+      <h1>Carousel uitlegbeelden <span>v4348</span></h1>
+      <p>De voorbeelden staan hier, niet in de grow-viewer.</p>
+    </div>
+    <a class="back" href="../index.html">Terug naar viewer</a>
+  </header>
+  <main class="shell">
+    <section class="stage" aria-label="Carousel afbeelding">
+      <img id="slideImage" alt="JAN carousel slide">
+    </section>
+    <section class="side">
+      <div class="counter" id="counter">—</div>
+      <h2 id="slideTitle">—</h2>
+      <p id="slideText">—</p>
+      <div class="controls">
+        <button id="firstBtn" type="button">Eerste</button>
+        <button id="prevBtn" type="button">Vorige</button>
+        <button id="nextBtn" type="button">Volgende</button>
+        <button id="lastBtn" type="button">Laatste</button>
+      </div>
+      <input id="slideRange" type="range" min="0" max="0" value="0" step="1" aria-label="Slide">
+      <details open>
+        <summary>Waarom carousel?</summary>
+        <p>De grow-viewer test één graph en één JSON. De carousel toont de didactische route: vrije knopen, vertakkingen, projectieruimte en later LEX/SYN/LOG.</p>
+      </details>
+    </section>
+  </main>
+  <script src="carousel.js" defer></script>
+</body>
+</html>

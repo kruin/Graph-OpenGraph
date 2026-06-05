@@ -1,1 +1,134 @@
-OpenGraph demo
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="JAN Open Notation viewer: mobiele demo voor open taalbomen, projecties en Greedy Grow JSON-exporten.">
+  <title>JAN Open Notation Viewer v4348</title>
+  <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <div class="eyebrow">JAN · OpenGraph</div>
+      <h1>Open Notation voor taalbomen <span class="version-tag">v4348</span></h1>
+      <p class="header-subtitle">Demo-viewer: vrije HOR/VER-plaatsing en grow-stappen. Uitlegbeelden staan in de JAN-carousel.</p>
+    </div>
+    <button id="installButton" class="ghost hidden" type="button">Installeer</button>
+  </header>
+
+  <main class="app-shell">
+    <section class="toolbar" aria-label="Besturing">
+      <button id="firstButton" type="button" title="Eerste stap">⏮</button>
+      <button id="undoButton" type="button" title="Undo grow-step">↶</button>
+      <button id="redoButton" type="button" title="Redo grow-step">↷</button>
+      <button id="prevButton" type="button" title="Vorige stap">◀</button>
+      <button id="playButton" type="button" title="Play/pause">▶</button>
+      <button id="nextButton" type="button" title="Volgende stap">▶</button>
+      <button id="lastButton" type="button" title="Static/all: laatste stap">⏭</button>
+      <button id="fitButton" type="button" title="Passend maken: tekengebied opnieuw om zichtbare knopen passen">Passend maken</button>
+      <button id="resetViewButton" type="button" title="Reset weergave-instellingen">Reset view</button>
+      <label class="file-label json-load" title="JSON laden: kies een eigen *_grow_demo.json uit OpenGraphEd">
+        JSON laden
+        <input id="fileInput" type="file" accept="application/json,.json">
+      </label>
+    </section>
+
+    <section class="intro-panel" aria-label="JAN uitleg">
+      <div class="intro-kicker">JAN</div>
+      <h2>Demo-viewer</h2>
+      <p>Deze viewer toont JAN/Open Notation als groeiende graph: vrije HOR/VER-plaatsing, optioneel raster, optionele lijnen, en stap-voor-stap afspelen van een JSON-export.</p>
+      <p>De inhoudelijke voorbeelden staan niet meer als losse viewer-voorbeelden in dit scherm. Gebruik daarvoor de JAN-carousel.</p>
+      <a class="button-link" href="carousel/index.html" title="Open de JAN-carousel met uitlegbeelden">JAN-carousel openen</a>
+    </section>
+
+    <section class="status-panel" aria-live="polite">
+      <div id="titleLine" class="title-line">—</div>
+      <div class="meter-row">
+        <span id="stepLabel">Stap 0 / 0</span>
+        <input id="stepRange" type="range" min="0" max="0" step="1" value="0" aria-label="Grow stap">
+      </div>
+      <div id="metaLine" class="meta-line">Tap op de tekening of druk op spatie/Enter voor de volgende stap.</div>
+    </section>
+
+    <section class="config-panel" aria-label="Greedy Grow instellingen">
+      <details open>
+        <summary>Instellingen</summary>
+        <div class="control-grid">
+          <label>
+            Max knopen
+            <input id="maxNodesInput" type="number" min="1" step="1" value="30">
+          </label>
+          <label class="checkline">
+            <input id="noLimitInput" type="checkbox" checked>
+            No limit
+          </label>
+          <label class="checkline">
+            <input id="autoSizeInput" type="checkbox" checked>
+            Auto size
+          </label>
+          <label>
+            Knoopgrootte
+            <input id="nodeSizeInput" type="range" min="3" max="20" step="1" value="6">
+          </label>
+          <label>
+            Grid/celgrootte
+            <input id="cellSizeInput" type="range" min="12" max="80" step="1" value="28">
+          </label>
+          <label>
+            Interval ms
+            <input id="intervalInput" type="number" min="80" max="10000" step="50" value="700">
+          </label>
+          <label class="checkline">
+            <input id="growGridInput" type="checkbox" checked>
+            Grid groeit mee
+          </label>
+          <label class="checkline">
+            <input id="showGridInput" type="checkbox" checked>
+            Grid tonen
+          </label>
+          <label class="checkline">
+            <input id="showLabelsInput" type="checkbox" checked>
+            Labels tonen
+          </label>
+          <label class="checkline">
+            <input id="showEdgesInput" type="checkbox">
+            Lijnen tonen
+          </label>
+          <p class="inline-help">Als JSON echte edges bevat, toont dit die edges. Als edges ontbreken, toont de viewer afgeleide groeilijnen tussen opeenvolgende stappen.</p>
+          <label class="checkline">
+            <input id="showAxesInput" type="checkbox" checked>
+            Assen tonen
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <section id="canvasWrap" class="canvas-wrap" aria-label="Greedy Grow canvas">
+      <svg id="graphSvg" role="img" aria-label="Greedy Grow graph" xmlns="http://www.w3.org/2000/svg"></svg>
+    </section>
+
+    <section class="text-panel">
+      <h2 id="stepHeading">Stap</h2>
+      <p id="stepText">Laad een Greedy Grow JSON-bestand of gebruik de technische startdemo.</p>
+      <details open>
+        <summary>JAN, viewer en carousel</summary>
+        <p><strong>Viewer</strong>: speelt één groeiende graph af op basis van JSON. Dit scherm is bedoeld om plaatsing, stappen, raster, lijnen en labels te testen.</p>
+        <p><strong>Carousel</strong>: bevat de uitlegbeelden en didactische voorbeelden van JAN/Open Notation. Gebruik die laag voor introductie, uitleg en vergelijking.</p>
+        <p><strong>Passend maken</strong> tekent opnieuw en past de viewBox aan de zichtbare knopen aan. Dit verandert geen JSON en geen stappen.</p>
+        <p><strong>JSON laden</strong> opent een eigen <code>*_grow_demo.json</code>-bestand, bijvoorbeeld uit OpenGraphEd via <code>Greedy → Export Greedy Grow JSON</code>.</p>
+      </details>
+      <details>
+        <summary>Mobiele bediening</summary>
+        <p>De viewer is een demonstrator. Hij toont hoe open geplaatste knopen stap voor stap kunnen groeien; hij is nog geen volledige editor of les-carrousel.</p>
+        <p><strong>Tap</strong> = volgende stap. <strong>Swipe links</strong> = volgende. <strong>Swipe rechts</strong> = vorige. <strong>Spatie/Enter</strong> = volgende. <strong>Backspace/←</strong> = vorige. <strong>Ctrl+Z</strong> = undo. <strong>Ctrl+Y</strong> = redo. <strong>G</strong> = play/pause. <strong>End/⏭</strong> = static/all. <strong>NoLimit</strong> gebruikt alle knopen in het JSON-bestand; <strong>Auto size</strong> koppelt grid, knoopgrootte en labelgrootte automatisch. Standaard toont de viewer HOR/VER-vrije bronknopen zonder verbindingslijnen; zet <strong>Lijnen tonen</strong> aan voor echte of afgeleide groeilijnen.</p>
+      </details>
+    </section>
+  </main>
+
+  <script src="viewer.js" defer></script>
+</body>
+</html>
