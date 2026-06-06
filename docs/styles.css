@@ -559,3 +559,49 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .functional-node {
   stroke: #7c3aed;
 }
+
+.role-box { stroke-dasharray: 5 4; }
+.role-node .box-label { font-size: 0.86rem; letter-spacing: 0.05em; }
+
+/* v4383: functional OPN must be visible as CLAUSE > role-boxes, not as pred-root triangle. */
+.tree-node .synt-box.role-root-box,
+.role-root-box {
+  fill: #f5f3ff;
+  stroke: #6d28d9;
+  stroke-width: 2.2;
+  vector-effect: non-scaling-stroke;
+}
+.tree-node .synt-box.role-box,
+.role-box {
+  fill: #faf5ff;
+  stroke: #8b5cf6;
+  stroke-width: 2.0;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+
+/* v4383: make OPN functional role-box structure unmistakable. */
+.role-root-box {
+  fill: #ede9fe !important;
+  stroke: #5b21b6 !important;
+  stroke-width: 2.8 !important;
+}
+.role-box {
+  fill: #f5f3ff !important;
+  stroke: #7c3aed !important;
+  stroke-width: 2.4 !important;
+  stroke-dasharray: 7 4 !important;
+}
+.role-node .box-label {
+  font-size: 15px !important;
+  font-weight: 950 !important;
+}
+
+/* v4384: projection = horizontal mapping from source node to projection axis. */
+.projection-line.horizontal {
+  stroke-dasharray: 10 5;
+  opacity: 0.78;
+}
+.lex-projection-slot {
+  stroke-width: 2.2;
+}

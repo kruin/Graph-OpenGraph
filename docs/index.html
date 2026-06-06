@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="OpenGraph Lite Viewer: vrije JAN-bronknopen, edits, LEX-plaatsingsregels en projecties.">
-  <title>OpenGraph Lite Viewer v4380</title>
+  <title>OpenGraph Lite Viewer v4385</title>
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v4385">
 </head>
 <body>
   <header class="app-header">
     <div>
       <div class="eyebrow">OpenGraph · JAN · Open Notation</div>
-      <h1>OpenGraph Lite Viewer <span class="version-tag">v4380</span></h1>
+      <h1>OpenGraph Lite Viewer <span class="version-tag">v4385</span></h1>
       <p class="header-subtitle">Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
@@ -45,7 +45,7 @@
 
     <section class="intro-panel" aria-label="Introductie">
       <div class="intro-kicker">Redesign · boom eerst</div>
-      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken alleen de LEX-projectie. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd.</p>
+      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken de LEX-projectie horizontaal vanaf de centrale boom naar de LEX-as. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd.</p>
     </section>
 
     <section class="status-panel" aria-live="polite">
@@ -66,6 +66,7 @@
             <button class="projection-tab" data-projection="log" type="button" role="tab" aria-selected="false">LOG/FT</button>
           </div>
           <label class="field center-mode-field"><span>Centraal OPN</span><select id="centralModeSelect"></select></label>
+          <label class="field center-mode-field"><span>Functioneel order</span><select id="functionalOrderSelect"></select></label>
           <p id="projectionHelp" class="inline-help">OPN/Assen: centrale OPN-weergave; LEX links, SYNTAX rechts, LOGICAL onder.</p>
           <div class="check-grid">
             <label><input id="showGridInput" type="checkbox" checked> Raster</label>
@@ -107,7 +108,7 @@
             <button id="lexRightButton" type="button">→</button>
             <button id="applyLexRuleButton" type="button">Pas regel toe</button>
           </div>
-          <p class="inline-help">De LEX-as verandert woordvolgorde en uitingtype-slots; de centrale boom blijft ongewijzigd.</p>
+          <p class="inline-help">Eerst projecteren bronknopen horizontaal op LEX; daarna verandert de lokale LEX-regel woordvolgorde en uitingtype-slots. De centrale boom blijft ongewijzigd.</p>
         </section>
 
         <section class="panel-card relation-card">
@@ -137,11 +138,11 @@
       </details>
       <details>
         <summary>Bediening</summary>
-        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. <strong>Bron</strong>: klik om te selecteren, sleep vrije bronknopen om te plaatsen. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel. <strong>Ctrl+Z</strong> undo, <strong>Ctrl+Y</strong> redo, <strong>F</strong> fit, <strong>Delete</strong> verwijdert de geselecteerde knoop.</p>
+        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. De syntaxboom wordt bottom-up berekend: eerst leaf/subtree-boxen, daarna plaatsing, daarna renderen. Projecties worden horizontaal naar hun as getekend. De functionele structuur gebruikt dezelfde recursieve werkwijze, maar is n-ary en heeft een configkeuze <strong>left-first</strong>/<strong>right-first</strong>. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel.</p>
       </details>
     </section>
   </main>
 
-  <script src="viewer.js" defer></script>
+  <script src="viewer.js?v4385" defer></script>
 </body>
 </html>

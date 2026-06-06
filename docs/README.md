@@ -1,21 +1,73 @@
-# OpenGraph Lite Viewer — PWA v4380
+# OpenGraph Lite Viewer — PWA v4385
 
-Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Just Another Notation**.
+Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Open Notation**.
 
-## Nieuw in v4380
+## Doel van deze fase
 
-- voorbeeld toegevoegd: `WIE HEEFT DE HOND GEBETEN`
-- assenweergave aangescherpt: LEX links, SYNTAX rechts, LOGICAL onder
-- gridcorrectie: elke SYNTAX-boomknoop heeft een eigen rasterkruispunt
+Deze versie beperkt de test bewust tot drie stappen:
 
-- Hoofdscherm is nu een kleine taalboom-editor in plaats van alleen een Greedy Grow-afspeler.
-- Vaste voorbeelden: `HOND BIJT MAN`, `MAN BIJT HOND`, `HOND MAN BIJT`, `WIE HEEFT DE HOND GEBETEN`, `VROUW HEEFT TRUI GEBREID`, `TRUI HEEFT VROUW GEBREID`, `MAN WORDT DOOR HOND GEBETEN`.
-- Hoofdbeeld **Assen**: vrije bron in het midden, **LEX links** met eindknopen, **SYNTAX rechts**, **LOGICAL onder**.
-- Focusprojecties blijven beschikbaar: **Bron**, **LEX**, **SYNT**, **LOG/FT**.
-- Beperkte edits: knopen slepen, toevoegen, dupliceren, verwijderen, label/categorie/rol wijzigen.
-- LEX-plaatsingsregels: SVO, SOV, Nederlands perfectum, topicalisatie en passief.
-- Relaties toevoegen/verwijderen.
-- JSON import/export en compacte `.opn` export/import.
+1. maak eerst de centrale boom voor `HOND BIJT MAN` correct;
+2. teken daarna de LEX-projectie;
+3. regel pas daarna lokaal op de LEX-as het uitingtype `OMDAT DE HOND DE MAN BIJT`.
+
+De centrale boom blijft invariant. `OMDAT` en determinatoren worden dus niet in de centrale syntaxboom ingevoegd.
+
+## Recursieve syntaxboom
+
+De syntaxboom wordt niet top-down met vaste handmatige posities geschreven. De layout gebruikt een bottom-up rekengang:
+
+1. bereken eerst alle leaf-boxes;
+2. bereken daarna elke parent-subtree uit de reeds berekende child-boxes;
+3. plaats child-subtrees als complete boxen op de eerste vrije HOR/VER-positie;
+4. reserveer gebruikte rijen, kolommen en boxruimte;
+5. render pas daarna de boxen, lijnen en knopen.
+
+De structurele volgorde blijft left-first, maar de tekenvolgorde is bottom-up:
+
+```text
+HOND / MAN / BIJT
+→ V(BIJT), NP(MAN), NP(HOND)
+→ VP(NP(MAN), V(BIJT))
+→ S(NP(HOND), VP(...))
+```
+
+De centrale syntaxboom is:
+
+```text
+S
+├─ NP
+│  └─ HOND
+└─ VP
+   ├─ NP
+   │  └─ MAN
+   └─ V
+      └─ BIJT
+```
+
+## Recursieve OPN-functionele structuur
+
+De OPN-functionele structuur gebruikt dezelfde bottom-up gedachte, maar met een eigen **n-ary role-box-layout**. De bron is niet `BIJT` als root; de root is expliciet `CLAUSE`:
+
+```text
+CLAUSE
+├─ AGENS   → HOND
+├─ PRED    → BIJT
+└─ PATIENS → MAN
+```
+
+De plaatsing heeft een menuconfiguratie:
+
+- `left-first`: AGENS/PRED/PATIENS zoeken om beurten eerst links/rechts/links naar een vrije HOR/VER-corridor;
+- `right-first`: dezelfde n-ary structuur, gespiegeld: eerst rechts/links/rechts.
+
+Deze keuze staat in het menu **Functioneel order** en wordt meegenomen in JSON/.OPN-export.
+
+## Projecties
+
+- **Bron**: toont de gekozen OPN-bron: syntaxboom of functionele structuur.
+- **LEX**: toont de lokale uitingtype-regel.
+- **SYNTAX-projectie**: toont alleen regels, geen rollenboom.
+- **LOG/FT**: toont de OPN-functionele structuur.
 
 ## Start lokaal
 
@@ -31,45 +83,21 @@ Open daarna:
 http://localhost:8088
 ```
 
-Carousel:
-
-```text
-http://localhost:8088/carousel/index.html
-```
-
-## Afbakening
-
-Deze Lite-versie neemt de voor OpenGraph/JAN relevante Java-editorconcepten over: graph-core, editing, projecties, bron/LEX/SYNT/LOG en import/export.
-
-Niet meegenomen in deze eerste stap: klassieke JGraphEd-algoritmen zoals planarity, Dijkstra, MST, biconnectivity, canonical ordering en algemene graph analysis.
+Gebruik na updates zo nodig `Ctrl+F5` of verwijder de oude service worker.
 
 ## Testpunten
 
-1. Open `index.html` via de lokale server.
-2. Kies elk voorbeeld in de dropdown.
-3. Controleer het assenbeeld: LEX links, SYNTAX rechts, LOGICAL onder. Wissel daarna eventueel tussen Bron / LEX / SYNT / LOG/FT.
-4. Sleep een vrije bronknoop in Assen of Bron; controleer dat LEX/SYNTAX/LOGICAL als projecties meebewegen.
-5. Wijzig label/categorie/rol van een knoop.
-6. Pas een LEX-plaatsingsregel toe.
-7. Download JSON, laad die opnieuw en controleer of edits bewaard blijven.
+1. Open `Bron → OPN · syntaxboom` en controleer de bottom-up vrije boxplaatsing.
+2. Open `Bron → OPN · functionele structuur` en wissel `Functioneel order` tussen `left-first` en `right-first`.
+3. Controleer dat `AGENS/PRED/PATIENS` niet als binaire boom worden behandeld.
+4. Open `Assen` en controleer dat LEX apart blijft.
+5. Kies `OMDAT DE HOND DE MAN BIJT` en controleer dat alleen de LEX-as verandert.
 
+## v4385-correctie functioneel
 
-## Correctie v4380
+`OPN · functionele structuur` tekent nu zichtbaar `CLAUSE > AGENS/PRED/PATIENS`. `BIJT` is alleen de leaf onder `PRED` en mag dus niet meer als centrale root van een driehoek verschijnen.
 
-- Centrale OPN-modus gebruikt nu expliciete waarden `opn-syntax` en `opn-functional`.
-- `SYNTAX-projectie` blijft alleen de rechter projectie; openen van OPN/Assen opent niet meer impliciet `synt`.
-- Oude imports met `opn_center: synt` of `opn_center: functional` worden automatisch genormaliseerd.
+## v4385-noot
 
-## Correctie syntaxboom v4380
-
-- Centrale OPN-syntaxboom is nu invariant en gebruikt exact:
-  - `S → NP VP`
-  - `VP → NP V`
-  - `V → pv VDW` wanneer een persoonsvorm + voltooid deelwoord aanwezig zijn
-- `Comp/(om)dat`, determinatoren en vooropplaatsing blijven lokale LEX-as-elementen.
-- Geen transformaties op de centrale boom; uitingtype-regels werken alleen op de LEX-as.
-
-
-## Correctie v4380
-
-De centrale OPN-syntaxboom gebruikt nu vrije HOR/VER-boxplaatsing: child-subtrees worden eerst gemeten, daarna zoekt iedere child-box de eerste vrije plek waar de root-rij en root-kolom nog niet bezet zijn. De tweede binaire child start onder de echte ondergrens van de eerste child-box; hij wordt niet meer als naastliggende container-child geplaatst.
+De header/subtitel is bewust gelijk gehouden: **Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.**  
+Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4385` en `styles.css?v4385`.

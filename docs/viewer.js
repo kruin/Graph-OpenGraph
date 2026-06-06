@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v4380';
+  const VERSION = 'v4385';
   const CELL = 74;
   const ROOT_SIDE_GAP = 1;
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -11,6 +11,7 @@
     canvasWrap: document.getElementById('canvasWrap'),
     exampleSelect: document.getElementById('exampleSelect'),
     centralModeSelect: document.getElementById('centralModeSelect'),
+    functionalOrderSelect: document.getElementById('functionalOrderSelect'),
     projectionHelp: document.getElementById('projectionHelp'),
     titleLine: document.getElementById('titleLine'),
     metaLine: document.getElementById('metaLine'),
@@ -92,10 +93,16 @@
     { id: 'functional', label: 'OPN · functionele structuur' }
   ];
 
+  const FUNCTIONAL_ORDERS = [
+    { id: 'left-first', label: 'functioneel: left-first' },
+    { id: 'right-first', label: 'functioneel: right-first' }
+  ];
+
   const state = {
     example: EXAMPLES[0],
     projection: 'axes',
     centerMode: 'syntax',
+    functionalOrder: 'left-first',
     selectedNodeId: null,
     showGrid: true,
     showRelations: true,
@@ -125,6 +132,18 @@
         node('np-obj', 'NP', [leaf('man', 'MAN', 'N')]),
         node('v', 'V', [leaf('bijt', 'BIJT', 'V')])
       ])
+    ]);
+  }
+
+
+  function functionalSpec() {
+    const leaf = (id, label, cat, role) => ({ id, label, cat, role, kind: 'leaf', children: [] });
+    const node = (id, label, role, children) => ({ id, label, cat: label, role, kind: 'role', children });
+    // Non-binaire OPN-functionele bron: één CLAUSE met drie role-boxes.
+    return node('ft-clause', 'CLAUSE', 'top', [
+      node('ft-agens', 'AGENS', 'agens', [leaf('hond', 'HOND', 'N', 'agens')]),
+      node('ft-pred', 'PRED', 'pred', [leaf('bijt', 'BIJT', 'V', 'pred')]),
+      node('ft-patiens', 'PATIENS', 'patiens', [leaf('man', 'MAN', 'N', 'patiens')])
     ]);
   }
 
@@ -349,29 +368,31 @@
     return composeLayout(node, [left, right]);
   }
 
-  function layoutNAry(node, childrenLayouts) {
+  function layoutNAry(node, childrenLayouts, options = {}) {
     const placed = [];
+    const firstSide = options.firstSide === 1 ? 1 : -1;
     childrenLayouts.forEach((layout, i) => {
-      const side = i % 2 === 0 ? -1 : 1;
+      const side = i % 2 === 0 ? firstSide : -firstSide;
       const startY = placed.length ? Math.max(...placed.map(p => p.box.maxY)) + 1 : 1;
       placed.push(placeLayoutFree(cloneLayout(layout), side, placed, node, startY));
     });
     return composeLayout(node, placed);
   }
 
-  function layoutTree(node, sidePreference = 0) {
+  function layoutTree(node, sidePreference = 0, options = {}) {
     const children = node.children || [];
     if (children.length === 0) return layoutLeaf(node);
     if (children.length === 1) {
-      const child = layoutTree(children[0], sidePreference || 1);
+      const child = layoutTree(children[0], sidePreference || 1, options);
       return layoutUnary(node, child, sidePreference || 1);
     }
     if (children.length === 2) {
-      const left = layoutTree(children[0], -1);
-      const right = layoutTree(children[1], 1);
+      const left = layoutTree(children[0], -1, options);
+      const right = layoutTree(children[1], 1, options);
       return layoutBinary(node, left, right);
     }
-    return layoutNAry(node, children.map((child, i) => layoutTree(child, i % 2 ? 1 : -1)));
+    const firstSide = options.firstSide === 1 ? 1 : -1;
+    return layoutNAry(node, children.map((child, i) => layoutTree(child, i % 2 ? -firstSide : firstSide, options)), options);
   }
 
   function normalizeLayout(layout) {
@@ -381,6 +402,85 @@
 
   function getSyntaxLayout() {
     return normalizeLayout(layoutTree(cloneTree(treeSpec()), 0));
+  }
+
+  function layoutFunctionalRoleTree(order = 'left-first') {
+    // v4383: dedicated non-binary functional OPN layout.
+    // The root is CLAUSE. It is not a predicate-root tree and not a binary tree.
+    // Bottom-up idea: role leaf-box -> role-box -> CLAUSE n-ary box.
+    // Placement uses free HOR/VER corridors: every role/root node and every leaf
+    // receives a distinct row and a distinct column. left-first/right-first only
+    // changes the first search direction and then alternates.
+    const firstSide = order === 'right-first' ? 1 : -1;
+    const roles = [
+      { roleId: 'ft-agens', roleLabel: 'AGENS', role: 'agens', leafId: 'hond', leafLabel: 'HOND', cat: 'N' },
+      { roleId: 'ft-pred', roleLabel: 'PRED', role: 'pred', leafId: 'bijt', leafLabel: 'BIJT', cat: 'V' },
+      { roleId: 'ft-patiens', roleLabel: 'PATIENS', role: 'patiens', leafId: 'man', leafLabel: 'MAN', cat: 'N' }
+    ];
+
+    const nodes = [{ id: 'ft-clause', label: 'CLAUSE', cat: 'CLAUSE', role: 'top', kind: 'role-root', x: 0, y: 0 }];
+    const edges = [];
+    const boxes = [];
+    const occupiedRows = new Set([0]);
+    const occupiedCols = new Set([0]);
+    const occupiedBoxes = [];
+
+    function cellBox(x, y) { return { minX: x, maxX: x, minY: y, maxY: y }; }
+    function freeAt(roleBox) {
+      for (const b of occupiedBoxes) if (boxesOverlap(roleBox, b, 0)) return false;
+      if (occupiedRows.has(roleBox.roleY) || occupiedRows.has(roleBox.leafY)) return false;
+      if (occupiedCols.has(roleBox.roleX) || occupiedCols.has(roleBox.leafX)) return false;
+      return true;
+    }
+    function reserve(roleBox) {
+      occupiedRows.add(roleBox.roleY);
+      occupiedRows.add(roleBox.leafY);
+      occupiedCols.add(roleBox.roleX);
+      occupiedCols.add(roleBox.leafX);
+      occupiedBoxes.push({ minX: roleBox.minX, maxX: roleBox.maxX, minY: roleBox.minY, maxY: roleBox.maxY });
+    }
+    function findRoleBox(i) {
+      const side = (i % 2 === 0 ? firstSide : -firstSide);
+      const mirror = side < 0 ? -1 : 1;
+      const baseY = 1 + i * 2;
+      // Candidate order: first intended side; then wider on that side; then a
+      // mirrored fallback. Rows only move down, never reuse an occupied row.
+      for (let extraY = 0; extraY <= 20; extraY++) {
+        const roleY = baseY + extraY;
+        const leafY = roleY + 1;
+        for (let d = 1; d <= 18; d++) {
+          for (const s of [mirror, -mirror]) {
+            const roleX = s * (1 + i + d - 1);
+            const leafX = s * (2 + i + d - 1);
+            const minX = Math.min(roleX, leafX);
+            const maxX = Math.max(roleX, leafX);
+            const roleBox = { roleX, roleY, leafX, leafY, minX, maxX, minY: roleY, maxY: leafY };
+            if (freeAt(roleBox)) return roleBox;
+          }
+        }
+      }
+      const fallbackX = mirror * (i + 2);
+      return { roleX: fallbackX, roleY: baseY + 30, leafX: fallbackX + mirror, leafY: baseY + 31, minX: Math.min(fallbackX, fallbackX + mirror), maxX: Math.max(fallbackX, fallbackX + mirror), minY: baseY + 30, maxY: baseY + 31 };
+    }
+
+    roles.forEach((item, i) => {
+      const b = findRoleBox(i);
+      reserve(b);
+      nodes.push({ id: item.roleId, label: item.roleLabel, cat: item.roleLabel, role: item.role, kind: 'role', x: b.roleX, y: b.roleY });
+      nodes.push({ id: item.leafId, label: item.leafLabel, cat: item.cat, role: item.role, kind: 'leaf', x: b.leafX, y: b.leafY });
+      edges.push({ from: 'ft-clause', to: item.roleId, fromX: 0, fromY: 0, toX: b.roleX, toY: b.roleY });
+      edges.push({ from: item.roleId, to: item.leafId, fromX: b.roleX, fromY: b.roleY, toX: b.leafX, toY: b.leafY });
+      boxes.push({ id: `box-${item.roleId}`, label: `ROLE ${item.roleLabel}`, nodeId: item.roleId, rootX: b.roleX, rootY: b.roleY, minX: b.minX, maxX: b.maxX, minY: b.minY, maxY: b.maxY, roleBox: true });
+    });
+
+    let box = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    for (const n of nodes) box = unionBox(box, cellBox(n.x, n.y));
+    boxes.unshift({ id: 'box-ft-clause', label: 'BOX CLAUSE', nodeId: 'ft-clause', rootX: 0, rootY: 0, minX: box.minX, maxX: box.maxX, minY: box.minY, maxY: box.maxY, clauseBox: true });
+    return { node: { id: 'ft-clause', label: 'CLAUSE', kind: 'role-root' }, nodes, edges, boxes, box };
+  }
+
+  function getFunctionalLayout() {
+    return normalizeLayout(layoutFunctionalRoleTree(state.functionalOrder));
   }
 
   function px(x, origin) { return origin.x + x * CELL; }
@@ -427,13 +527,14 @@
     for (const node of layout.nodes) {
       const cx = px(node.x, origin);
       const cy = py(node.y, origin);
-      const group = svgEl('g', { class: `tree-node ${node.kind === 'leaf' ? 'leaf-node' : 'cat-node'} ${state.selectedNodeId === node.id ? 'selected' : ''}`, 'data-node-id': node.id });
+      const group = svgEl('g', { class: `tree-node ${node.kind === 'leaf' ? 'leaf-node' : (node.kind === 'role' ? 'role-node' : 'cat-node')} ${state.selectedNodeId === node.id ? 'selected' : ''}`, 'data-node-id': node.id });
       if (node.kind === 'leaf') {
         group.appendChild(svgEl('circle', { cx, cy, r: 27, class: 'node-circle' }));
         group.appendChild(svgEl('text', { x: cx, y: cy - 2, class: 'node-main-label' }, node.label));
         group.appendChild(svgEl('text', { x: cx, y: cy + 18, class: 'node-sub-label' }, node.cat));
       } else {
-        group.appendChild(svgEl('rect', { x: cx - 46, y: cy - 23, width: 92, height: 46, rx: 13, class: 'synt-box category-box' }));
+        const boxClass = node.kind === 'role-root' ? 'synt-box role-root-box' : (node.kind === 'role' ? 'synt-box role-box' : 'synt-box category-box');
+        group.appendChild(svgEl('rect', { x: cx - 52, y: cy - 23, width: 104, height: 46, rx: 13, class: boxClass }));
         group.appendChild(svgEl('text', { x: cx, y: cy + 5, class: 'box-label' }, node.label));
       }
       if (selectable) group.addEventListener('click', () => selectNode(node.id));
@@ -459,23 +560,53 @@
     g.appendChild(svgEl('text', { x, y, class: 'axis-title' }, text));
   }
 
+  function lexItemY(item, index, y0, sourceMap = null) {
+    const p = item.source && sourceMap ? sourceMap.get(item.source) : null;
+    if (p) return p.py;
+
+    // Slot 0: Comp/(om)dat is a local LEX slot. In the axes view it must sit
+    // one grid row above the central S/CLAUSE root box, not in the ordinary
+    // local utterance list. This keeps the central tree invariant and makes
+    // the Comp slot a genuine LEX-axis position.
+    if (!item.source && item.slot === 'comp') {
+      const root = sourceMap ? (sourceMap.get('s') || sourceMap.get('ft-clause')) : null;
+      return root ? root.py - CELL : y0 - CELL;
+    }
+
+    return y0 + index * 64;
+  }
+
+  function lexSlotIndex(item, index) {
+    return item.slot === 'comp' ? '0' : String(index + 1);
+  }
+
   function drawLexAxis(g, x, y0, items, sourceMap = null) {
-    drawAxisTitle(g, x - 80, y0 - 70, 'LEX-as · lokale uitingtype-regel');
-    g.appendChild(svgEl('line', { x1: x, y1: y0 - 48, x2: x, y2: y0 + Math.max(3, items.length) * 64 + 40, class: 'lex-axis-line' }));
+    const horizontalProjectionMode = !!sourceMap;
+    drawAxisTitle(g, x - 98, y0 - 70, horizontalProjectionMode ? 'LEX-projectie · horizontaal' : 'LEX-as · lokale uitingtype-regel');
+
+    const itemYs = items.map((item, i) => lexItemY(item, i, y0, sourceMap));
+    const axisYs = [...itemYs, y0 - 48, y0 + Math.max(3, items.length) * 64 + 40];
+    const axisMinY = Math.min(...axisYs) - 36;
+    const axisMaxY = Math.max(...axisYs) + 44;
+    g.appendChild(svgEl('line', { x1: x, y1: axisMinY, x2: x, y2: axisMaxY, class: 'lex-axis-line' }));
 
     const positions = new Map();
     items.forEach((item, i) => {
-      const y = y0 + i * 64;
-      positions.set(item.id, { x, y, item });
+      const p = item.source && sourceMap ? sourceMap.get(item.source) : null;
+      // Fase 2: bronknopen projecteren horizontaal op LEX. De LEX-kopie krijgt
+      // daarom dezelfde y-positie als de centrale bronknoop. Lokale items
+      // zoals OMDAT/DE blijven op de uitingtype-regel staan.
+      const y = lexItemY(item, i, y0, sourceMap);
+      positions.set(item.id, { x, y, item, sourcePoint: p || null });
       if (!item.source && item.slot === 'comp') {
         g.appendChild(svgEl('rect', { x: x - 86, y: y - 28, width: 172, height: 56, rx: 16, class: 'lex-free-slot comp-slot' }));
-        g.appendChild(svgEl('text', { x, y: y - 34, class: 'slot-caption' }, 'vrij LEX-slot · Comp/(om)dat'));
+        g.appendChild(svgEl('text', { x, y: y - 34, class: 'slot-caption' }, 'slot 0 · Comp/(om)dat'));
       } else if (!item.source) {
         g.appendChild(svgEl('rect', { x: x - 66, y: y - 26, width: 132, height: 52, rx: 14, class: 'lex-local-slot' }));
       } else {
-        g.appendChild(svgEl('rect', { x: x - 62, y: y - 28, width: 124, height: 56, rx: 14, class: 'lex-slot-box' }));
+        g.appendChild(svgEl('rect', { x: x - 62, y: y - 28, width: 124, height: 56, rx: 14, class: 'lex-slot-box lex-projection-slot' }));
       }
-      g.appendChild(svgEl('text', { x: x - 92, y: y + 5, class: 'lex-index' }, String(i + 1)));
+      g.appendChild(svgEl('text', { x: x - 92, y: y + 5, class: 'lex-index' }, lexSlotIndex(item, i)));
       g.appendChild(svgEl('text', { x, y: y + 5, class: item.source ? 'lex-label' : 'lex-local-label' }, item.label));
     });
 
@@ -483,9 +614,10 @@
       for (const item of items) {
         if (!item.source) continue;
         const p = sourceMap.get(item.source);
-        const lp = positions.get(item.id);
-        if (!p || !lp) continue;
-        g.appendChild(pathEl(`M ${p.px} ${p.py} L ${x} ${p.py} L ${x} ${lp.y}`, { class: 'projection-line lex orthogonal' }));
+        if (!p) continue;
+        // Projecties zijn vanaf v4384 horizontaal: geen knik en geen verticale
+        // correctie op de as. Dit is het model voor alle latere projecties.
+        g.appendChild(pathEl(`M ${p.px} ${p.py} L ${x} ${p.py}`, { class: 'projection-line lex horizontal' }));
       }
     }
     return positions;
@@ -501,30 +633,31 @@
     });
   }
 
-  function drawFunctional(g, origin) {
-    drawAxisTitle(g, origin.x - 120, origin.y - 70, 'OPN · functionele structuur');
-    const points = {
-      pred: { x: origin.x, y: origin.y, label: 'BIJT', sub: 'predicaat' },
-      agens: { x: origin.x - 230, y: origin.y + 100, label: 'HOND', sub: 'agens' },
-      patiens: { x: origin.x + 230, y: origin.y + 100, label: 'MAN', sub: 'patiens' }
-    };
-    g.appendChild(svgEl('line', { x1: points.pred.x, y1: points.pred.y + 24, x2: points.agens.x, y2: points.agens.y - 24, class: 'relation-edge' }));
-    g.appendChild(svgEl('line', { x1: points.pred.x, y1: points.pred.y + 24, x2: points.patiens.x, y2: points.patiens.y - 24, class: 'relation-edge' }));
-    for (const p of Object.values(points)) {
-      g.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 30, class: 'functional-node' }));
-      g.appendChild(svgEl('text', { x: p.x, y: p.y - 2, class: 'node-main-label' }, p.label));
-      g.appendChild(svgEl('text', { x: p.x, y: p.y + 18, class: 'node-sub-label' }, p.sub));
+  function drawFunctional(g, origin, options = {}) {
+    const layout = getFunctionalLayout();
+    const ids = new Set(layout.nodes.map(n => n.id));
+    const functionalOk = ids.has('ft-clause') && ids.has('ft-agens') && ids.has('ft-pred') && ids.has('ft-patiens');
+    if (!functionalOk) {
+      drawAxisTitle(g, origin.x - 180, origin.y - 70, 'FOUT: functionele layout mist CLAUSE/AGENS/PRED/PATIENS');
+      return layout;
     }
+    if (options.showTitle !== false) drawAxisTitle(g, origin.x - 180, origin.y - 70, `OPN · functionele structuur · CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
+    drawAxisTitle(g, origin.x - 176, origin.y - 48, 'v4383 · n-ary bottom-up role-box layout · geen BIJT-root');
+    drawSubtreeBoxes(g, layout, origin);
+    drawTreeEdges(g, layout, origin);
+    drawTreeNodes(g, layout, origin, options.selectable !== false);
+    return layout;
   }
 
   function drawAxes() {
     const g = baseSvg('axes-view');
     const origin = { x: 760, y: 115 };
-    drawAxisTitle(g, origin.x - 170, origin.y - 76, 'CENTRAAL · OPN-syntaxboom · vrije HOR/VER-boxlayout');
+    drawAxisTitle(g, origin.x - 170, origin.y - 76, state.centerMode === 'functional' ? `CENTRAAL · OPN-functioneel · CLAUSE met n-ary role-boxen · ${state.functionalOrder}` : 'CENTRAAL · OPN-syntaxboom · vrije HOR/VER-boxlayout');
 
     let sourceMap = null;
     if (state.centerMode === 'functional') {
-      drawFunctional(g, origin);
+      const layout = drawFunctional(g, origin, { showTitle: false });
+      sourceMap = layoutNodeMap(layout, origin);
     } else {
       const layout = drawSyntaxTree(g, origin);
       sourceMap = layoutNodeMap(layout, origin);
@@ -539,7 +672,7 @@
     const g = baseSvg('source-view');
     if (state.centerMode === 'functional') {
       drawFunctional(g, { x: 760, y: 170 });
-      drawAxisTitle(g, 570, 70, 'BRON · OPN-functionele structuur');
+      drawAxisTitle(g, 520, 70, `BRON · OPN-functioneel · CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
     } else {
       drawAxisTitle(g, 490, 58, 'BRON · OPN-syntax-tree · vrije HOR/VER-boxplaatsing');
       drawSyntaxTree(g, { x: 780, y: 125 });
@@ -592,13 +725,13 @@
     els.titleLine.textContent = `${state.example.title} · ${state.projectionLabel || projectionLabel()} · ${state.centerMode === 'syntax' ? 'OPN-syntaxboom' : 'OPN-functioneel'}`;
     els.metaLine.textContent = `${state.example.phase} · centrale boom invariant · LEX=${state.example.lexItems.map(i => i.label).join(' ')}`;
     els.actionFeedback.textContent = state.projection === 'source'
-      ? 'Bron toont nu de gekozen OPN-bron: bij OPN-syntax is dat de syntax-tree zelf, niet de functionele rollenboom.'
-      : 'Faseversie: eerst boom, dan LEX-projectie, daarna lokale LEX-regel.';
+      ? 'Bron toont de gekozen OPN-bron. Syntax gebruikt bottom-up box-layout; functioneel toont expliciet CLAUSE met n-ary role-boxen, niet BIJT als root.'
+      : 'Faseversie: eerst boom, dan horizontale LEX-projectie met slot 0 boven S, daarna lokale LEX-regel.';
     els.projectionHelp.textContent = helpText();
     els.explainHeading.textContent = `Uitleg · ${state.example.title}`;
     els.explainText.textContent = state.example.id === 'hond-bijt-man'
-      ? 'Eerst wordt alleen de centrale syntax-tree opgebouwd. Daarna projecteert LEX de drie eindknopen HOND, BIJT en MAN. Er is nog geen lokale bijzinregel.'
-      : 'De centrale syntax-tree blijft HOND-BIJT-MAN. De bijzin wordt uitsluitend lokaal op de LEX-as gevormd: OMDAT en de determinatoren zijn LEX-lokaal.';
+      ? 'Eerst wordt alleen de centrale syntax-tree opgebouwd. Daarna projecteert LEX de drie eindknopen HOND, BIJT en MAN horizontaal op de LEX-as; Comp/(om)dat gebruikt slot 0 net boven de S-box. Er is nog geen lokale bijzinregel.'
+      : 'De centrale syntax-tree blijft HOND-BIJT-MAN. De bijzin wordt uitsluitend lokaal op de LEX-as gevormd: OMDAT staat in LEX-slot 0 net boven S; de determinatoren zijn LEX-lokaal.';
   }
 
   function projectionLabel() {
@@ -606,11 +739,11 @@
   }
 
   function helpText() {
-    if (state.projection === 'source') return 'Bron: OPN-syntax toont de syntax-tree zelf. OPN-functioneel toont de rollenstructuur apart.';
+    if (state.projection === 'source') return 'Bron: OPN-syntax toont de syntax-tree; OPN-functioneel toont CLAUSE met AGENS/PRED/PATIENS-role-boxen. Geen predicaat-rootboom.';
     if (state.projection === 'lex') return 'LEX: lokale uitingtype-regel. OMDAT/DE zijn lokaal en wijzigen de boom niet.';
     if (state.projection === 'synt') return 'SYNTAX-projectie: alleen S → NP VP, VP → NP V, V → BIJT.';
-    if (state.projection === 'log') return 'LOG/FT: functionele rollen als aparte projectie.';
-    return 'Assen: centrale syntax-tree, LEX-as links, SYNTAX-regels rechts.';
+    if (state.projection === 'log') return 'LOG/FT: functionele rollen als n-ary recursieve structuur.';
+    return 'Assen: centrale syntax-tree, horizontale projecties naar de assen; LEX links, SYNTAX-regels rechts.';
   }
 
   function renderSideLists() {
@@ -651,6 +784,8 @@
   function syncControls() {
     fillSelect(els.exampleSelect, EXAMPLES, state.example.id);
     fillSelect(els.centralModeSelect, CENTER_MODES, state.centerMode);
+    fillSelect(els.functionalOrderSelect, FUNCTIONAL_ORDERS, state.functionalOrder);
+    if (els.functionalOrderSelect) els.functionalOrderSelect.disabled = state.centerMode !== 'functional' && state.projection !== 'log';
     fillSelect(els.lexRuleSelect, LEX_RULES, state.example.lexRule);
     if (els.showGridInput) els.showGridInput.checked = state.showGrid;
     if (els.showRelationsInput) els.showRelationsInput.checked = state.showRelations;
@@ -669,7 +804,7 @@
   }
 
   function renderSelection() {
-    const layout = getSyntaxLayout();
+    const layout = state.centerMode === 'functional' ? getFunctionalLayout() : getSyntaxLayout();
     const node = layout.nodes.find(n => n.id === state.selectedNodeId);
     if (!node) {
       els.selectionEmpty?.classList.remove('hidden');
@@ -681,7 +816,7 @@
     if (els.nodeIdField) els.nodeIdField.value = node.id;
     if (els.nodeLabelInput) els.nodeLabelInput.value = node.label;
     fillSelect(els.nodeCatInput, [{ id: node.cat, label: node.cat }], node.cat);
-    fillSelect(els.nodeRoleInput, [{ id: 'syntax', label: 'syntax' }], 'syntax');
+    fillSelect(els.nodeRoleInput, [{ id: node.role || 'syntax', label: node.role || 'syntax' }], node.role || 'syntax');
     if (els.nodeXInput) els.nodeXInput.value = node.x;
     if (els.nodeYInput) els.nodeYInput.value = node.y;
   }
@@ -703,6 +838,7 @@
       version: VERSION,
       example: state.example.id,
       central_opn: state.centerMode,
+      functional_order: state.functionalOrder,
       invariant_tree: ['S -> NP VP', 'VP -> NP V', 'V -> BIJT'],
       lex: state.example.lexItems
     };
@@ -718,7 +854,8 @@
       '  VP -> NP V',
       '  V -> BIJT',
       `lex: ${state.example.lexItems.map(i => i.label).join(' ')}`,
-      `lex_rule: ${state.example.lexRule}`
+      `lex_rule: ${state.example.lexRule}`,
+      `functional_order: ${state.functionalOrder}`
     ];
     download(`${state.example.id}.${VERSION}.opn`, lines.join('\n'), 'text/plain');
   }
@@ -737,6 +874,10 @@
     });
     els.centralModeSelect?.addEventListener('change', event => {
       state.centerMode = event.target.value;
+      render();
+    });
+    els.functionalOrderSelect?.addEventListener('change', event => {
+      state.functionalOrder = event.target.value === 'right-first' ? 'right-first' : 'left-first';
       render();
     });
     els.lexRuleSelect?.addEventListener('change', event => {
@@ -774,7 +915,7 @@
     registerEvents();
     render();
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v4383').catch(() => {});
     }
   }
 
