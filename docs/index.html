@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="OpenGraph Lite Viewer: vrije JAN-bronknopen, edits, LEX-plaatsingsregels en projecties.">
-  <title>OpenGraph Lite Viewer v4385</title>
+  <title>OpenGraph Lite Viewer v4386</title>
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v4385">
+  <link rel="stylesheet" href="styles.css?v4386">
 </head>
 <body>
   <header class="app-header">
     <div>
       <div class="eyebrow">OpenGraph · JAN · Open Notation</div>
-      <h1>OpenGraph Lite Viewer <span class="version-tag">v4385</span></h1>
+      <h1>OpenGraph Lite Viewer <span class="version-tag">v4386</span></h1>
       <p class="header-subtitle">Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
@@ -45,7 +45,7 @@
 
     <section class="intro-panel" aria-label="Introductie">
       <div class="intro-kicker">Redesign · boom eerst</div>
-      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken de LEX-projectie horizontaal vanaf de centrale boom naar de LEX-as. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd.</p>
+      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken de LEX-projectie horizontaal vanaf de centrale boom naar de LEX-as. Beide OPN-bronnen reserveren daarbij <strong>slot 1</strong> voor vooropplaatsing/topicalisatie tussen beginknoop en boom. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd.</p>
     </section>
 
     <section class="status-panel" aria-live="polite">
@@ -138,11 +138,11 @@
       </details>
       <details>
         <summary>Bediening</summary>
-        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. De syntaxboom wordt bottom-up berekend: eerst leaf/subtree-boxen, daarna plaatsing, daarna renderen. Projecties worden horizontaal naar hun as getekend. De functionele structuur gebruikt dezelfde recursieve werkwijze, maar is n-ary en heeft een configkeuze <strong>left-first</strong>/<strong>right-first</strong>. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel.</p>
+        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. De syntaxboom wordt bottom-up berekend: eerst leaf/subtree-boxen, daarna plaatsing, daarna renderen. Projecties worden horizontaal naar hun as getekend. De functionele structuur gebruikt dezelfde recursieve werkwijze, is n-ary, heeft ook een eigen LEX-projectie, reserveert slot 1 voor vooropplaatsing/topicalisatie en heeft een configkeuze <strong>left-first</strong>/<strong>right-first</strong>. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel.</p>
       </details>
     </section>
   </main>
 
-  <script src="viewer.js?v4385" defer></script>
+  <script src="viewer.js?v4386" defer></script>
 </body>
 </html>

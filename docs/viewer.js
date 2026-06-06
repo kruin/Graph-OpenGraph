@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v4385';
+  const VERSION = 'v4386';
   const CELL = 74;
   const ROOT_SIDE_GAP = 1;
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -203,6 +203,10 @@
       if (typeof b.rootY === 'number') b.rootY += dy;
     }
     layout.box = shiftBox(layout.box, dx, dy);
+    if (layout.topicalizationSlot) {
+      layout.topicalizationSlot.x += dx;
+      layout.topicalizationSlot.y += dy;
+    }
     return layout;
   }
 
@@ -400,12 +404,48 @@
     return shiftLayout(layout, dx, 0);
   }
 
+  function addOpnTopicalizationSlot(layout, rootId = null) {
+    // v4386: OPN source trees reserve an explicit local fronting/topicalization
+    // slot between the start node (S/CLAUSE) and the upper tree material.
+    // This is a structural OPN slot, not a transformation of the tree.  All
+    // non-root tree material is shifted down one grid row so the slot occupies
+    // its own free HOR/VER position.
+    const root = layout.nodes.find(n => n.id === rootId) || layout.nodes[0];
+    if (!root) return layout;
+
+    for (const node of layout.nodes) {
+      if (node.id !== root.id) node.y += 1;
+    }
+    for (const edge of layout.edges) {
+      if (edge.from !== root.id) edge.fromY += 1;
+      if (edge.to !== root.id) edge.toY += 1;
+    }
+    for (const box of layout.boxes) {
+      if (box.nodeId === root.id) {
+        box.maxY += 1;
+      } else {
+        box.minY += 1;
+        box.maxY += 1;
+        if (typeof box.rootY === 'number') box.rootY += 1;
+      }
+    }
+    layout.box.maxY += 1;
+    layout.topicalizationSlot = {
+      id: `${root.id}-topic-slot`,
+      label: 'slot 1 · vooropplaatsing/topicalisatie',
+      x: root.x,
+      y: root.y + 1,
+      rootId: root.id
+    };
+    return layout;
+  }
+
   function getSyntaxLayout() {
-    return normalizeLayout(layoutTree(cloneTree(treeSpec()), 0));
+    return normalizeLayout(addOpnTopicalizationSlot(layoutTree(cloneTree(treeSpec()), 0), 's'));
   }
 
   function layoutFunctionalRoleTree(order = 'left-first') {
-    // v4383: dedicated non-binary functional OPN layout.
+    // v4386: dedicated non-binary functional OPN layout with topicalization slot.
     // The root is CLAUSE. It is not a predicate-root tree and not a binary tree.
     // Bottom-up idea: role leaf-box -> role-box -> CLAUSE n-ary box.
     // Placement uses free HOR/VER corridors: every role/root node and every leaf
@@ -480,7 +520,7 @@
   }
 
   function getFunctionalLayout() {
-    return normalizeLayout(layoutFunctionalRoleTree(state.functionalOrder));
+    return normalizeLayout(addOpnTopicalizationSlot(layoutFunctionalRoleTree(state.functionalOrder), 'ft-clause'));
   }
 
   function px(x, origin) { return origin.x + x * CELL; }
@@ -510,6 +550,16 @@
       g.appendChild(svgEl('rect', { x, y, width: w, height: h, rx: 18, class: 'jan-subtree-box' }));
       g.appendChild(svgEl('text', { x: x + 14, y: y + 24, class: 'jan-box-caption' }, `BOX ${box.label.replace(/^BOX\s+/i, '')}`));
     }
+  }
+
+  function drawOpnTopicalizationSlot(g, layout, origin) {
+    if (!layout.topicalizationSlot) return;
+    const slot = layout.topicalizationSlot;
+    const x = px(slot.x, origin);
+    const y = py(slot.y, origin);
+    g.appendChild(svgEl('rect', { x: x - 125, y: y - 28, width: 250, height: 56, rx: 16, class: 'opn-topicalization-slot' }));
+    g.appendChild(svgEl('text', { x, y: y - 36, class: 'slot-caption opn-slot-caption' }, 'OPN-slot 1'));
+    g.appendChild(svgEl('text', { x, y: y + 5, class: 'opn-slot-label' }, 'vooropplaatsing / topicalisatie'));
   }
 
   function drawTreeEdges(g, layout, origin) {
@@ -546,6 +596,7 @@
     const layout = getSyntaxLayout();
     drawSubtreeBoxes(g, layout, origin);
     drawTreeEdges(g, layout, origin);
+    drawOpnTopicalizationSlot(g, layout, origin);
     drawTreeNodes(g, layout, origin, options.selectable !== false);
     return layout;
   }
@@ -553,11 +604,26 @@
   function layoutNodeMap(layout, origin) {
     const map = new Map();
     for (const node of layout.nodes) map.set(node.id, { ...node, px: px(node.x, origin), py: py(node.y, origin) });
+    if (layout.topicalizationSlot) {
+      const slot = layout.topicalizationSlot;
+      map.set('opn-topic-slot', { id: slot.id, label: slot.label, kind: 'opn-slot', x: slot.x, y: slot.y, px: px(slot.x, origin), py: py(slot.y, origin) });
+    }
     return map;
   }
 
   function drawAxisTitle(g, x, y, text) {
     g.appendChild(svgEl('text', { x, y, class: 'axis-title' }, text));
+  }
+
+  function lexTopicSlotY(sourceMap = null, y0 = 0) {
+    const slot = sourceMap ? sourceMap.get('opn-topic-slot') : null;
+    return slot ? slot.py : y0;
+  }
+
+  function drawLexTopicSlot(g, x, y) {
+    g.appendChild(svgEl('rect', { x: x - 98, y: y - 27, width: 196, height: 54, rx: 16, class: 'lex-free-slot topic-slot' }));
+    g.appendChild(svgEl('text', { x, y: y - 34, class: 'slot-caption' }, 'slot 1 · vooropplaatsing'));
+    g.appendChild(svgEl('text', { x, y: y + 5, class: 'lex-local-label' }, 'TOPIC'));
   }
 
   function lexItemY(item, index, y0, sourceMap = null) {
@@ -585,12 +651,14 @@
     drawAxisTitle(g, x - 98, y0 - 70, horizontalProjectionMode ? 'LEX-projectie · horizontaal' : 'LEX-as · lokale uitingtype-regel');
 
     const itemYs = items.map((item, i) => lexItemY(item, i, y0, sourceMap));
-    const axisYs = [...itemYs, y0 - 48, y0 + Math.max(3, items.length) * 64 + 40];
+    const topicSlotY = sourceMap ? lexTopicSlotY(sourceMap, y0) : null;
+    const axisYs = [...itemYs, ...(topicSlotY === null ? [] : [topicSlotY]), y0 - 48, y0 + Math.max(3, items.length) * 64 + 40];
     const axisMinY = Math.min(...axisYs) - 36;
     const axisMaxY = Math.max(...axisYs) + 44;
     g.appendChild(svgEl('line', { x1: x, y1: axisMinY, x2: x, y2: axisMaxY, class: 'lex-axis-line' }));
 
     const positions = new Map();
+    if (sourceMap && topicSlotY !== null) drawLexTopicSlot(g, x, topicSlotY);
     items.forEach((item, i) => {
       const p = item.source && sourceMap ? sourceMap.get(item.source) : null;
       // Fase 2: bronknopen projecteren horizontaal op LEX. De LEX-kopie krijgt
@@ -642,9 +710,10 @@
       return layout;
     }
     if (options.showTitle !== false) drawAxisTitle(g, origin.x - 180, origin.y - 70, `OPN · functionele structuur · CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
-    drawAxisTitle(g, origin.x - 176, origin.y - 48, 'v4383 · n-ary bottom-up role-box layout · geen BIJT-root');
+    drawAxisTitle(g, origin.x - 176, origin.y - 48, 'v4386 · n-ary role-boxen + OPN-slot 1 + geen BIJT-root');
     drawSubtreeBoxes(g, layout, origin);
     drawTreeEdges(g, layout, origin);
+    drawOpnTopicalizationSlot(g, layout, origin);
     drawTreeNodes(g, layout, origin, options.selectable !== false);
     return layout;
   }
@@ -652,7 +721,7 @@
   function drawAxes() {
     const g = baseSvg('axes-view');
     const origin = { x: 760, y: 115 };
-    drawAxisTitle(g, origin.x - 170, origin.y - 76, state.centerMode === 'functional' ? `CENTRAAL · OPN-functioneel · CLAUSE met n-ary role-boxen · ${state.functionalOrder}` : 'CENTRAAL · OPN-syntaxboom · vrije HOR/VER-boxlayout');
+    drawAxisTitle(g, origin.x - 170, origin.y - 76, state.centerMode === 'functional' ? `CENTRAAL · OPN-functioneel · CLAUSE met slot 1 + n-ary role-boxen · ${state.functionalOrder}` : 'CENTRAAL · OPN-syntaxboom · slot 1 + vrije HOR/VER-boxlayout');
 
     let sourceMap = null;
     if (state.centerMode === 'functional') {
@@ -672,9 +741,9 @@
     const g = baseSvg('source-view');
     if (state.centerMode === 'functional') {
       drawFunctional(g, { x: 760, y: 170 });
-      drawAxisTitle(g, 520, 70, `BRON · OPN-functioneel · CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
+      drawAxisTitle(g, 520, 70, `BRON · OPN-functioneel · slot 1 + CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
     } else {
-      drawAxisTitle(g, 490, 58, 'BRON · OPN-syntax-tree · vrije HOR/VER-boxplaatsing');
+      drawAxisTitle(g, 490, 58, 'BRON · OPN-syntax-tree · slot 1 + vrije HOR/VER-boxplaatsing');
       drawSyntaxTree(g, { x: 780, y: 125 });
     }
     els.svg.appendChild(g);
@@ -726,12 +795,12 @@
     els.metaLine.textContent = `${state.example.phase} · centrale boom invariant · LEX=${state.example.lexItems.map(i => i.label).join(' ')}`;
     els.actionFeedback.textContent = state.projection === 'source'
       ? 'Bron toont de gekozen OPN-bron. Syntax gebruikt bottom-up box-layout; functioneel toont expliciet CLAUSE met n-ary role-boxen, niet BIJT als root.'
-      : 'Faseversie: eerst boom, dan horizontale LEX-projectie met slot 0 boven S, daarna lokale LEX-regel.';
+      : 'Faseversie: eerst boom met OPN-slot 1 voor vooropplaatsing, dan horizontale LEX-projectie met slot 0 boven S/CLAUSE, daarna lokale LEX-regel.';
     els.projectionHelp.textContent = helpText();
     els.explainHeading.textContent = `Uitleg · ${state.example.title}`;
     els.explainText.textContent = state.example.id === 'hond-bijt-man'
-      ? 'Eerst wordt alleen de centrale syntax-tree opgebouwd. Daarna projecteert LEX de drie eindknopen HOND, BIJT en MAN horizontaal op de LEX-as; Comp/(om)dat gebruikt slot 0 net boven de S-box. Er is nog geen lokale bijzinregel.'
-      : 'De centrale syntax-tree blijft HOND-BIJT-MAN. De bijzin wordt uitsluitend lokaal op de LEX-as gevormd: OMDAT staat in LEX-slot 0 net boven S; de determinatoren zijn LEX-lokaal.';
+      ? 'Eerst wordt alleen de centrale syntax-tree opgebouwd. Daarna projecteert LEX de drie eindknopen HOND, BIJT en MAN horizontaal op de LEX-as; OPN-slot 1 reserveert vooropplaatsing tussen S en de boom; Comp/(om)dat gebruikt LEX-slot 0 net boven de S-box. Er is nog geen lokale bijzinregel.'
+      : 'De centrale syntax-tree blijft HOND-BIJT-MAN. De bijzin wordt uitsluitend lokaal op de LEX-as gevormd: OMDAT staat in LEX-slot 0 net boven S/CLAUSE; OPN-slot 1 reserveert vooropplaatsing/topicalisatie; de determinatoren zijn LEX-lokaal.';
   }
 
   function projectionLabel() {
@@ -739,11 +808,11 @@
   }
 
   function helpText() {
-    if (state.projection === 'source') return 'Bron: OPN-syntax toont de syntax-tree; OPN-functioneel toont CLAUSE met AGENS/PRED/PATIENS-role-boxen. Geen predicaat-rootboom.';
+    if (state.projection === 'source') return 'Bron: OPN-syntax toont de syntax-tree; OPN-functioneel toont CLAUSE met AGENS/PRED/PATIENS-role-boxen plus OPN-slot 1. Geen predicaat-rootboom.';
     if (state.projection === 'lex') return 'LEX: lokale uitingtype-regel. OMDAT/DE zijn lokaal en wijzigen de boom niet.';
     if (state.projection === 'synt') return 'SYNTAX-projectie: alleen S → NP VP, VP → NP V, V → BIJT.';
     if (state.projection === 'log') return 'LOG/FT: functionele rollen als n-ary recursieve structuur.';
-    return 'Assen: centrale syntax-tree, horizontale projecties naar de assen; LEX links, SYNTAX-regels rechts.';
+    return 'Assen: centrale OPN-boom met topicalisatie-slot; horizontale projecties naar LEX links; SYNTAX-regels rechts.';
   }
 
   function renderSideLists() {
@@ -915,7 +984,7 @@
     registerEvents();
     render();
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js?v4383').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v4386').catch(() => {});
     }
   }
 

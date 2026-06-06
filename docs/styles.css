@@ -605,3 +605,29 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .lex-projection-slot {
   stroke-width: 2.2;
 }
+
+
+/* v4386: OPN topicalization/fronting slot inside syntax and functional sources. */
+.opn-topicalization-slot {
+  fill: #ecfeff;
+  stroke: #0891b2;
+  stroke-width: 2.2;
+  stroke-dasharray: 9 5;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.96;
+}
+.opn-slot-label {
+  fill: #0e7490;
+  font-size: 15px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.topic-slot {
+  stroke: #0891b2;
+  fill: #ecfeff;
+}
+.opn-slot-caption {
+  fill: #0e7490;
+}

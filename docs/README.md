@@ -1,4 +1,4 @@
-# OpenGraph Lite Viewer — PWA v4385
+# OpenGraph Lite Viewer — PWA v4386
 
 Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Open Notation**.
 
@@ -93,11 +93,23 @@ Gebruik na updates zo nodig `Ctrl+F5` of verwijder de oude service worker.
 4. Open `Assen` en controleer dat LEX apart blijft.
 5. Kies `OMDAT DE HOND DE MAN BIJT` en controleer dat alleen de LEX-as verandert.
 
-## v4385-correctie functioneel
+## v4386-correctie functioneel
 
 `OPN · functionele structuur` tekent nu zichtbaar `CLAUSE > AGENS/PRED/PATIENS`. `BIJT` is alleen de leaf onder `PRED` en mag dus niet meer als centrale root van een driehoek verschijnen.
 
-## v4385-noot
+## v4386-noot
 
 De header/subtitel is bewust gelijk gehouden: **Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.**  
-Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4385` en `styles.css?v4385`.
+Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4386` en `styles.css?v4386`.
+
+
+## v4386 — OPN-slot voor vooropplaatsing
+
+De OPN-bronnen reserveren nu expliciet een plaats voor vooropplaatsing/topicalisatie:
+
+- in de OPN-syntaxboom: tussen `S` en de bovenste boomlaag;
+- in de OPN-functionele structuur: tussen `CLAUSE` en de bovenste role-boxen;
+- in de LEX-projectie: `slot 1 · vooropplaatsing` projecteert horizontaal mee met de OPN-bron;
+- `slot 0 · Comp/(om)dat` blijft het hogere lokale LEX-slot voor bijzinnen.
+
+De functionele structuur heeft daarmee, net als de syntaxboom, een eigen LEX-projectie. De functionele structuur blijft n-ary en gebruikt de config `left-first` / `right-first` voor de vrije role-boxplaatsing.
