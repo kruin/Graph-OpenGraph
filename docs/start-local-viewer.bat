@@ -2,10 +2,10 @@
 setlocal
 cd /d "%~dp0"
 echo.
-echo JAN Open Notation Viewer v4355
+echo OpenGraph Lite Viewer v4360
 echo.
 echo Start lokale server op http://localhost:8088
-echo Gebruik 8088 zodat oude service-worker/cache van eerdere viewer-versies niet stoort.
+echo Gebruik 8088. Herlaad hard als een oude PWA-cache nog actief is.
 echo.
 where py >nul 2>nul
 if %errorlevel%==0 (

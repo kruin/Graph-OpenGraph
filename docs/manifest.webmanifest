@@ -1,7 +1,7 @@
 {
-  "name": "JAN Open Notation Viewer",
-  "short_name": "JAN Viewer",
-  "description": "JAN (Just Another Notation) viewer voor taalbomen: open groeiviewer met topmenu-config, groeilijnen, browser-Greedy-generator, diagonal-free controle en JAN-carousel.",
+  "name": "OpenGraph Lite Viewer",
+  "short_name": "OpenGraph Lite",
+  "description": "OpenGraph Lite Viewer voor JAN/Open Notation: vrije bronknopen, projectie-assen, edits en LEX-plaatsingsregels.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -9,17 +9,7 @@
   "background_color": "#f8fafc",
   "theme_color": "#0f172a",
   "icons": [
-    {
-      "src": "icons/icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

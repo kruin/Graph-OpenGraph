@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jan-opennotation-viewer-v4355';
+const CACHE_NAME = 'opengraph-lite-viewer-v4365';
 
 const ASSETS = [
   './',
