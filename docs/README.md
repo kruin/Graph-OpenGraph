@@ -1,8 +1,8 @@
-# OpenGraph Lite Viewer — PWA v4365
+# OpenGraph Lite Viewer — PWA v4380
 
 Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Just Another Notation**.
 
-## Nieuw in v4365
+## Nieuw in v4380
 
 - voorbeeld toegevoegd: `WIE HEEFT DE HOND GEBETEN`
 - assenweergave aangescherpt: LEX links, SYNTAX rechts, LOGICAL onder
@@ -54,8 +54,22 @@ Niet meegenomen in deze eerste stap: klassieke JGraphEd-algoritmen zoals planari
 7. Download JSON, laad die opnieuw en controleer of edits bewaard blijven.
 
 
-## Correctie v4365
+## Correctie v4380
 
 - Centrale OPN-modus gebruikt nu expliciete waarden `opn-syntax` en `opn-functional`.
 - `SYNTAX-projectie` blijft alleen de rechter projectie; openen van OPN/Assen opent niet meer impliciet `synt`.
 - Oude imports met `opn_center: synt` of `opn_center: functional` worden automatisch genormaliseerd.
+
+## Correctie syntaxboom v4380
+
+- Centrale OPN-syntaxboom is nu invariant en gebruikt exact:
+  - `S → NP VP`
+  - `VP → NP V`
+  - `V → pv VDW` wanneer een persoonsvorm + voltooid deelwoord aanwezig zijn
+- `Comp/(om)dat`, determinatoren en vooropplaatsing blijven lokale LEX-as-elementen.
+- Geen transformaties op de centrale boom; uitingtype-regels werken alleen op de LEX-as.
+
+
+## Correctie v4380
+
+De centrale OPN-syntaxboom gebruikt nu vrije HOR/VER-boxplaatsing: child-subtrees worden eerst gemeten, daarna zoekt iedere child-box de eerste vrije plek waar de root-rij en root-kolom nog niet bezet zijn. De tweede binaire child start onder de echte ondergrens van de eerste child-box; hij wordt niet meer als naastliggende container-child geplaatst.

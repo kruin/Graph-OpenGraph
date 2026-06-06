@@ -353,6 +353,15 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .source-free-node .node-circle { cursor: grab; }
 .source-free-node .node-circle:active { cursor: grabbing; }
 
+.free-slot-box {
+  fill: color-mix(in srgb, var(--panel), var(--bg) 50%);
+  stroke: var(--line);
+  stroke-width: 1.3;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 8 5;
+  opacity: 0.92;
+}
+
 .text-panel details { margin-top: 0.7rem; }
 .text-panel summary { cursor: pointer; font-weight: 800; margin-bottom: 0.35rem; }
 .text-panel p + p { margin-top: 0.45rem; }
@@ -375,4 +384,178 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .button-row .button-link { flex: 1 1 auto; }
   .check-grid { grid-template-columns: 1fr; }
   .canvas-wrap { min-height: 22rem; }
+}
+
+
+.projection-line.orthogonal {
+  stroke-dasharray: 7 5;
+  stroke-linejoin: round;
+  stroke-linecap: square;
+}
+
+.syntax-rule-box {
+  stroke-width: 1.6;
+}
+
+.axes-synt-rules .axis-label-bg,
+.synt-rule-view .axis-label-bg {
+  opacity: 0.96;
+}
+
+
+.tree-subbox {
+  fill: color-mix(in srgb, var(--panel), transparent 25%);
+  stroke: color-mix(in srgb, var(--line), var(--accent) 22%);
+  stroke-width: 1.2;
+  stroke-dasharray: 7 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.tree-subbox.root {
+  stroke-width: 1.8;
+  stroke-dasharray: none;
+}
+
+.tree-subbox.leaf {
+  fill: color-mix(in srgb, var(--panel), var(--accent) 6%);
+  stroke-dasharray: 3 5;
+}
+
+.tree-subbox-label {
+  fill: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* v4380 redesign: free HOR/VER syntax-box placement, LEX second. */
+.jan-subtree-box {
+  fill: rgba(248, 250, 252, 0.62);
+  stroke: #94a3b8;
+  stroke-width: 1.3;
+  stroke-dasharray: 8 6;
+  vector-effect: non-scaling-stroke;
+}
+.jan-box-caption {
+  fill: #475569;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.syntax-tree-edge {
+  stroke: #16a34a;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.tree-node text,
+.lex-label,
+.lex-local-label,
+.rule-label,
+.axis-title,
+.slot-caption,
+.lex-index {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+}
+.tree-node .node-circle,
+.functional-node {
+  fill: #f8fafc;
+  stroke: #0f172a;
+  stroke-width: 2.4;
+  vector-effect: non-scaling-stroke;
+}
+.tree-node.leaf-node .node-circle {
+  stroke: #16a34a;
+  stroke-width: 3.2;
+}
+.tree-node.selected .node-circle,
+.tree-node.selected .synt-box {
+  stroke: #ef4444;
+  stroke-width: 4;
+}
+.node-main-label {
+  fill: #0f172a;
+  font-size: 18px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(248,250,252,.85);
+  stroke-width: 4px;
+}
+.node-sub-label {
+  fill: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+.category-box {
+  fill: #f8fafc;
+  stroke: #cbd5e1;
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+.box-label {
+  fill: #0f172a;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-size: 16px;
+  font-weight: 900;
+}
+.axis-title {
+  fill: #0f172a;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+.lex-axis-line {
+  stroke: #2563eb;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+.projection-line.lex {
+  stroke: #2563eb;
+  stroke-width: 2;
+  stroke-dasharray: 8 5;
+  vector-effect: non-scaling-stroke;
+}
+.lex-slot-box,
+.lex-local-slot,
+.lex-free-slot,
+.syntax-rule-box {
+  fill: #f8fafc;
+  stroke: #cbd5e1;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.lex-local-slot,
+.lex-free-slot {
+  stroke-dasharray: 8 5;
+  fill: #fff7ed;
+}
+.comp-slot {
+  stroke: #f97316;
+}
+.lex-label,
+.lex-local-label {
+  text-anchor: middle;
+  font-size: 16px;
+  font-weight: 900;
+  fill: #0f172a;
+}
+.lex-local-label {
+  fill: #9a3412;
+}
+.lex-index,
+.slot-caption {
+  fill: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+.lex-order-item.local {
+  border-style: dashed;
+  color: #9a3412;
+}
+.functional-node {
+  stroke: #7c3aed;
 }

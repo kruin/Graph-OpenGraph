@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="OpenGraph Lite Viewer: vrije JAN-bronknopen, edits, LEX-plaatsingsregels en projecties.">
-  <title>OpenGraph Lite Viewer v4365</title>
+  <title>OpenGraph Lite Viewer v4380</title>
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
@@ -14,8 +14,8 @@
   <header class="app-header">
     <div>
       <div class="eyebrow">OpenGraph · JAN · Open Notation</div>
-      <h1>OpenGraph Lite Viewer <span class="version-tag">v4365</span></h1>
-      <p class="header-subtitle">OPN/assenversie: centrale OPN-weergave met LEX links, SYNTAX rechts en LOGICAL onder.</p>
+      <h1>OpenGraph Lite Viewer <span class="version-tag">v4380</span></h1>
+      <p class="header-subtitle">Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
   </header>
@@ -44,8 +44,8 @@
     </section>
 
     <section class="intro-panel" aria-label="Introductie">
-      <div class="intro-kicker">JAN-bron ≠ eindboom</div>
-      <p><strong>Assen</strong> toont centraal een configureerbare OPN-weergave: syntactische boom of functionele structuur. <strong>LEX</strong> projecteert de eindknopen links op de woordvolgorde-as. <strong>SYNTAX</strong> projecteert rechts naar een syntactische boomruimte. <strong>LOGICAL</strong> projecteert onder naar predicate–argument / FT. Alle projecties worden uit dezelfde onderliggende bron opgebouwd.</p>
+      <div class="intro-kicker">Redesign · boom eerst</div>
+      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken alleen de LEX-projectie. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd.</p>
     </section>
 
     <section class="status-panel" aria-live="polite">
@@ -99,15 +99,15 @@
         </section>
 
         <section class="panel-card lex-card">
-          <h2>LEX-plaatsing</h2>
-          <label class="field"><span>Regel</span><select id="lexRuleSelect"></select></label>
+          <h2>LEX-as · uitingtype</h2>
+          <label class="field"><span>Uitingtype-regel</span><select id="lexRuleSelect"></select></label>
           <div id="lexOrderList" class="lex-order-list" aria-label="LEX volgorde"></div>
           <div class="button-row">
             <button id="lexLeftButton" type="button">←</button>
             <button id="lexRightButton" type="button">→</button>
             <button id="applyLexRuleButton" type="button">Pas regel toe</button>
           </div>
-          <p class="inline-help">De LEX-as verandert woordvolgorde, niet de onderliggende rolrelaties.</p>
+          <p class="inline-help">De LEX-as verandert woordvolgorde en uitingtype-slots; de centrale boom blijft ongewijzigd.</p>
         </section>
 
         <section class="panel-card relation-card">

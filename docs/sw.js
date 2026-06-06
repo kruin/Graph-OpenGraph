@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opengraph-lite-viewer-v4365';
+const CACHE_NAME = 'opengraph-lite-viewer-v4380';
 
 const ASSETS = [
   './',
