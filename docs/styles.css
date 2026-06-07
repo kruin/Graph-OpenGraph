@@ -607,7 +607,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 
-/* v4386: OPN topicalization/fronting slot inside syntax and functional sources. */
+/* v4388: OPN topicalization/fronting slot inside syntax and functional sources. */
 .opn-topicalization-slot {
   fill: #ecfeff;
   stroke: #0891b2;
@@ -630,4 +630,30 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .opn-slot-caption {
   fill: #0e7490;
+}
+
+/* v4388: example sentences are readable HTML-input; strong=subject, em=object. */
+.input-sentence-tools {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.sentence-preview {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.8rem;
+  background: #ffffff;
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+}
+.sentence-preview strong {
+  font-weight: 950;
+  color: #166534;
+}
+.sentence-preview em {
+  font-style: italic;
+  color: #7c2d12;
 }

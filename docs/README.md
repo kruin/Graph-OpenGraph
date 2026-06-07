@@ -1,4 +1,4 @@
-# OpenGraph Lite Viewer — PWA v4386
+# OpenGraph Lite Viewer — PWA v4388
 
 Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Open Notation**.
 
@@ -93,17 +93,17 @@ Gebruik na updates zo nodig `Ctrl+F5` of verwijder de oude service worker.
 4. Open `Assen` en controleer dat LEX apart blijft.
 5. Kies `OMDAT DE HOND DE MAN BIJT` en controleer dat alleen de LEX-as verandert.
 
-## v4386-correctie functioneel
+## v4388-correctie functioneel
 
 `OPN · functionele structuur` tekent nu zichtbaar `CLAUSE > AGENS/PRED/PATIENS`. `BIJT` is alleen de leaf onder `PRED` en mag dus niet meer als centrale root van een driehoek verschijnen.
 
-## v4386-noot
+## v4388-noot
 
 De header/subtitel is bewust gelijk gehouden: **Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.**  
-Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4386` en `styles.css?v4386`.
+Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4388` en `styles.css?v4388`.
 
 
-## v4386 — OPN-slot voor vooropplaatsing
+## v4388 — OPN-slot voor vooropplaatsing
 
 De OPN-bronnen reserveren nu expliciet een plaats voor vooropplaatsing/topicalisatie:
 
@@ -113,3 +113,20 @@ De OPN-bronnen reserveren nu expliciet een plaats voor vooropplaatsing/topicalis
 - `slot 0 · Comp/(om)dat` blijft het hogere lokale LEX-slot voor bijzinnen.
 
 De functionele structuur heeft daarmee, net als de syntaxboom, een eigen LEX-projectie. De functionele structuur blijft n-ary en gebruikt de config `left-first` / `right-first` voor de vrije role-boxplaatsing.
+
+
+## v4388 — voorbeeldzinnen als HTML-input
+
+De actieve voorbeeldzinnen staan nu ook in `examples-input.html`.
+
+- `<strong>` markeert het gekozen subject.
+- `<em>` markeert het gekozen object.
+- De viewer leest deze HTML-input bij opstarten wanneer hij via de lokale server draait.
+- De knop **Wissel S/O** wisselt de lexicale vulling van subject en object. De grammaticale markering blijft gelijk: vet blijft subject, cursief blijft object.
+
+Actieve beginvoorbeelden:
+
+```html
+<strong>HOND</strong> BIJT <em>MAN</em>
+OMDAT DE <strong>HOND</strong> DE <em>MAN</em> BIJT
+```

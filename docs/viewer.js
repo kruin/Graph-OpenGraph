@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v4386';
+  const VERSION = 'v4388';
   const CELL = 74;
   const ROOT_SIDE_GAP = 1;
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -15,6 +15,7 @@
     projectionHelp: document.getElementById('projectionHelp'),
     titleLine: document.getElementById('titleLine'),
     metaLine: document.getElementById('metaLine'),
+    sentencePreview: document.getElementById('sentencePreview'),
     actionFeedback: document.getElementById('actionFeedback'),
     explainHeading: document.getElementById('explainHeading'),
     explainText: document.getElementById('explainText'),
@@ -50,20 +51,25 @@
     downloadOpnButton: document.getElementById('downloadOpnButton'),
     lexLeftButton: document.getElementById('lexLeftButton'),
     lexRightButton: document.getElementById('lexRightButton'),
-    applyLexRuleButton: document.getElementById('applyLexRuleButton')
+    applyLexRuleButton: document.getElementById('applyLexRuleButton'),
+    swapRolesButton: document.getElementById('swapRolesButton')
   };
 
-  const EXAMPLES = [
+  let EXAMPLES = [
     {
       id: 'hond-bijt-man',
       title: 'HOND BIJT MAN',
       phase: 'Fase 1+2',
       lexRule: 'hoofdzininvariant',
       sentence: 'HOND BIJT MAN',
+      sentenceHtml: '<strong>HOND</strong> BIJT <em>MAN</em>',
+      subjectDefault: 'HOND',
+      objectDefault: 'MAN',
+      predicate: 'BIJT',
       lexItems: [
-        { id: 'hond', label: 'HOND', source: 'hond' },
-        { id: 'bijt', label: 'BIJT', source: 'bijt' },
-        { id: 'man', label: 'MAN', source: 'man' }
+        { id: 'hond', label: 'HOND', source: 'hond', role: 'subject' },
+        { id: 'bijt', label: 'BIJT', source: 'bijt', role: 'predicate' },
+        { id: 'man', label: 'MAN', source: 'man', role: 'object' }
       ]
     },
     {
@@ -72,13 +78,17 @@
       phase: 'Fase 3',
       lexRule: 'bijzin-omdat',
       sentence: 'OMDAT DE HOND DE MAN BIJT',
+      sentenceHtml: 'OMDAT DE <strong>HOND</strong> DE <em>MAN</em> BIJT',
+      subjectDefault: 'HOND',
+      objectDefault: 'MAN',
+      predicate: 'BIJT',
       lexItems: [
         { id: 'omdat', label: 'OMDAT', source: null, slot: 'comp' },
         { id: 'de-subj', label: 'DE', source: null, slot: 'det-subj' },
-        { id: 'hond', label: 'HOND', source: 'hond' },
+        { id: 'hond', label: 'HOND', source: 'hond', role: 'subject' },
         { id: 'de-obj', label: 'DE', source: null, slot: 'det-obj' },
-        { id: 'man', label: 'MAN', source: 'man' },
-        { id: 'bijt', label: 'BIJT', source: 'bijt' }
+        { id: 'man', label: 'MAN', source: 'man', role: 'object' },
+        { id: 'bijt', label: 'BIJT', source: 'bijt', role: 'predicate' }
       ]
     }
   ];
@@ -106,7 +116,8 @@
     selectedNodeId: null,
     showGrid: true,
     showRelations: true,
-    showLabels: true
+    showLabels: true,
+    roleSwap: false
   };
 
   function svgEl(name, attrs = {}, text = '') {
@@ -123,27 +134,108 @@
     return svgEl('path', { d, fill: 'none', ...attrs });
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  }
+
+  function roleLabels() {
+    const ex = state.example || EXAMPLES[0];
+    const subject = ex.subjectDefault || 'HOND';
+    const object = ex.objectDefault || 'MAN';
+    return {
+      subject: state.roleSwap ? object : subject,
+      object: state.roleSwap ? subject : object,
+      predicate: ex.predicate || 'BIJT'
+    };
+  }
+
+  function activeLexItems() {
+    const roles = roleLabels();
+    return (state.example.lexItems || []).map(item => {
+      if (item.role === 'subject') return { ...item, label: roles.subject };
+      if (item.role === 'object') return { ...item, label: roles.object };
+      if (item.role === 'predicate') return { ...item, label: roles.predicate };
+      return { ...item };
+    });
+  }
+
+  function activeSentenceText() {
+    return activeLexItems().map(i => i.label).join(' ');
+  }
+
+  function activeSentenceHtml() {
+    const roles = roleLabels();
+    const ex = state.example || EXAMPLES[0];
+    if (ex.lexRule === 'bijzin-omdat') {
+      return `OMDAT DE <strong>${escapeHtml(roles.subject)}</strong> DE <em>${escapeHtml(roles.object)}</em> ${escapeHtml(roles.predicate)}`;
+    }
+    return `<strong>${escapeHtml(roles.subject)}</strong> ${escapeHtml(roles.predicate)} <em>${escapeHtml(roles.object)}</em>`;
+  }
+
+  async function loadExamplesFromHtml() {
+    try {
+      const response = await fetch(`examples-input.html?${VERSION}`, { cache: 'no-store' });
+      if (!response.ok) return;
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const cards = [...doc.querySelectorAll('.example-input')];
+      const parsed = cards.map((card, idx) => {
+        const sentenceEl = card.querySelector('.sentence');
+        const subject = sentenceEl?.querySelector('[data-role="subject"]')?.textContent.trim() || 'HOND';
+        const object = sentenceEl?.querySelector('[data-role="object"]')?.textContent.trim() || 'MAN';
+        const lexItems = [...card.querySelectorAll('.lex-token')].map((token, i) => ({
+          id: token.dataset.id || `lex-${i + 1}`,
+          label: token.textContent.trim(),
+          source: token.dataset.source || null,
+          slot: token.dataset.slot || null,
+          role: token.dataset.role || null
+        }));
+        return {
+          id: card.dataset.id || `example-${idx + 1}`,
+          title: (sentenceEl?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase(),
+          phase: card.dataset.phase || 'Fase',
+          lexRule: card.dataset.lexRule || 'hoofdzininvariant',
+          sentence: (sentenceEl?.textContent || '').replace(/\s+/g, ' ').trim().toUpperCase(),
+          sentenceHtml: sentenceEl?.innerHTML || '',
+          subjectDefault: subject.toUpperCase(),
+          objectDefault: object.toUpperCase(),
+          predicate: (card.dataset.predicate || 'BIJT').toUpperCase(),
+          lexItems
+        };
+      }).filter(ex => ex.id && ex.lexItems.length);
+      if (parsed.length) {
+        const currentId = state.example?.id;
+        EXAMPLES = parsed;
+        state.example = EXAMPLES.find(ex => ex.id === currentId) || EXAMPLES[0];
+      }
+    } catch (err) {
+      // Fetch kan mislukken via file://. De ingebouwde fallback blijft dan actief.
+    }
+  }
+
   function treeSpec() {
+    const roles = roleLabels();
     const leaf = (id, label, cat) => ({ id, label, cat, kind: 'leaf', children: [] });
     const node = (id, label, children) => ({ id, label, cat: label, kind: 'cat', children });
     return node('s', 'S', [
-      node('np-subj', 'NP', [leaf('hond', 'HOND', 'N')]),
+      node('np-subj', 'NP', [leaf('hond', roles.subject, 'N')]),
       node('vp', 'VP', [
-        node('np-obj', 'NP', [leaf('man', 'MAN', 'N')]),
-        node('v', 'V', [leaf('bijt', 'BIJT', 'V')])
+        node('np-obj', 'NP', [leaf('man', roles.object, 'N')]),
+        node('v', 'V', [leaf('bijt', roles.predicate, 'V')])
       ])
     ]);
   }
 
 
   function functionalSpec() {
+    const roles = roleLabels();
     const leaf = (id, label, cat, role) => ({ id, label, cat, role, kind: 'leaf', children: [] });
     const node = (id, label, role, children) => ({ id, label, cat: label, role, kind: 'role', children });
     // Non-binaire OPN-functionele bron: één CLAUSE met drie role-boxes.
     return node('ft-clause', 'CLAUSE', 'top', [
-      node('ft-agens', 'AGENS', 'agens', [leaf('hond', 'HOND', 'N', 'agens')]),
-      node('ft-pred', 'PRED', 'pred', [leaf('bijt', 'BIJT', 'V', 'pred')]),
-      node('ft-patiens', 'PATIENS', 'patiens', [leaf('man', 'MAN', 'N', 'patiens')])
+      node('ft-agens', 'AGENS', 'agens', [leaf('hond', roles.subject, 'N', 'agens')]),
+      node('ft-pred', 'PRED', 'pred', [leaf('bijt', roles.predicate, 'V', 'pred')]),
+      node('ft-patiens', 'PATIENS', 'patiens', [leaf('man', roles.object, 'N', 'patiens')])
     ]);
   }
 
@@ -405,7 +497,7 @@
   }
 
   function addOpnTopicalizationSlot(layout, rootId = null) {
-    // v4386: OPN source trees reserve an explicit local fronting/topicalization
+    // v4388: OPN source trees reserve an explicit local fronting/topicalization
     // slot between the start node (S/CLAUSE) and the upper tree material.
     // This is a structural OPN slot, not a transformation of the tree.  All
     // non-root tree material is shifted down one grid row so the slot occupies
@@ -445,17 +537,18 @@
   }
 
   function layoutFunctionalRoleTree(order = 'left-first') {
-    // v4386: dedicated non-binary functional OPN layout with topicalization slot.
+    // v4388: dedicated non-binary functional OPN layout with topicalization slot.
     // The root is CLAUSE. It is not a predicate-root tree and not a binary tree.
     // Bottom-up idea: role leaf-box -> role-box -> CLAUSE n-ary box.
     // Placement uses free HOR/VER corridors: every role/root node and every leaf
     // receives a distinct row and a distinct column. left-first/right-first only
     // changes the first search direction and then alternates.
     const firstSide = order === 'right-first' ? 1 : -1;
+    const labels = roleLabels();
     const roles = [
-      { roleId: 'ft-agens', roleLabel: 'AGENS', role: 'agens', leafId: 'hond', leafLabel: 'HOND', cat: 'N' },
-      { roleId: 'ft-pred', roleLabel: 'PRED', role: 'pred', leafId: 'bijt', leafLabel: 'BIJT', cat: 'V' },
-      { roleId: 'ft-patiens', roleLabel: 'PATIENS', role: 'patiens', leafId: 'man', leafLabel: 'MAN', cat: 'N' }
+      { roleId: 'ft-agens', roleLabel: 'AGENS', role: 'agens', leafId: 'hond', leafLabel: labels.subject, cat: 'N' },
+      { roleId: 'ft-pred', roleLabel: 'PRED', role: 'pred', leafId: 'bijt', leafLabel: labels.predicate, cat: 'V' },
+      { roleId: 'ft-patiens', roleLabel: 'PATIENS', role: 'patiens', leafId: 'man', leafLabel: labels.object, cat: 'N' }
     ];
 
     const nodes = [{ id: 'ft-clause', label: 'CLAUSE', cat: 'CLAUSE', role: 'top', kind: 'role-root', x: 0, y: 0 }];
@@ -710,7 +803,7 @@
       return layout;
     }
     if (options.showTitle !== false) drawAxisTitle(g, origin.x - 180, origin.y - 70, `OPN · functionele structuur · CLAUSE → AGENS/PRED/PATIENS · ${state.functionalOrder}`);
-    drawAxisTitle(g, origin.x - 176, origin.y - 48, 'v4386 · n-ary role-boxen + OPN-slot 1 + geen BIJT-root');
+    drawAxisTitle(g, origin.x - 176, origin.y - 48, 'v4388 · n-ary role-boxen + OPN-slot 1 + geen BIJT-root');
     drawSubtreeBoxes(g, layout, origin);
     drawTreeEdges(g, layout, origin);
     drawOpnTopicalizationSlot(g, layout, origin);
@@ -732,7 +825,7 @@
       sourceMap = layoutNodeMap(layout, origin);
     }
 
-    drawLexAxis(g, 210, 185, state.example.lexItems, sourceMap);
+    drawLexAxis(g, 210, 185, activeLexItems(), sourceMap);
     drawSyntaxRules(g, 1240, 180);
     els.svg.appendChild(g);
   }
@@ -751,7 +844,7 @@
 
   function drawLex() {
     const g = baseSvg('lex-view');
-    drawLexAxis(g, 560, 130, state.example.lexItems, null);
+    drawLexAxis(g, 560, 130, activeLexItems(), null);
     g.appendChild(svgEl('text', { x: 700, y: 70, class: 'axis-title' }, state.example.lexRule === 'bijzin-omdat' ? 'Regel: bijzin met lokaal Comp-slot' : 'Regel: hoofdzin zonder verplaatsing'));
     els.svg.appendChild(g);
   }
@@ -791,13 +884,14 @@
   }
 
   function renderStatus() {
-    els.titleLine.textContent = `${state.example.title} · ${state.projectionLabel || projectionLabel()} · ${state.centerMode === 'syntax' ? 'OPN-syntaxboom' : 'OPN-functioneel'}`;
-    els.metaLine.textContent = `${state.example.phase} · centrale boom invariant · LEX=${state.example.lexItems.map(i => i.label).join(' ')}`;
+    els.titleLine.textContent = `${activeSentenceText()} · ${state.projectionLabel || projectionLabel()} · ${state.centerMode === 'syntax' ? 'OPN-syntaxboom' : 'OPN-functioneel'}`;
+    els.metaLine.textContent = `${state.example.phase} · centrale boom invariant · LEX=${activeSentenceText()} · HTML-input=examples-input.html`;
+    if (els.sentencePreview) els.sentencePreview.innerHTML = activeSentenceHtml();
     els.actionFeedback.textContent = state.projection === 'source'
       ? 'Bron toont de gekozen OPN-bron. Syntax gebruikt bottom-up box-layout; functioneel toont expliciet CLAUSE met n-ary role-boxen, niet BIJT als root.'
       : 'Faseversie: eerst boom met OPN-slot 1 voor vooropplaatsing, dan horizontale LEX-projectie met slot 0 boven S/CLAUSE, daarna lokale LEX-regel.';
     els.projectionHelp.textContent = helpText();
-    els.explainHeading.textContent = `Uitleg · ${state.example.title}`;
+    els.explainHeading.textContent = `Uitleg · ${activeSentenceText()}`;
     els.explainText.textContent = state.example.id === 'hond-bijt-man'
       ? 'Eerst wordt alleen de centrale syntax-tree opgebouwd. Daarna projecteert LEX de drie eindknopen HOND, BIJT en MAN horizontaal op de LEX-as; OPN-slot 1 reserveert vooropplaatsing tussen S en de boom; Comp/(om)dat gebruikt LEX-slot 0 net boven de S-box. Er is nog geen lokale bijzinregel.'
       : 'De centrale syntax-tree blijft HOND-BIJT-MAN. De bijzin wordt uitsluitend lokaal op de LEX-as gevormd: OMDAT staat in LEX-slot 0 net boven S/CLAUSE; OPN-slot 1 reserveert vooropplaatsing/topicalisatie; de determinatoren zijn LEX-lokaal.';
@@ -817,10 +911,10 @@
 
   function renderSideLists() {
     els.lexOrderList.replaceChildren();
-    state.example.lexItems.forEach((item, i) => {
+    activeLexItems().forEach((item, i) => {
       const row = document.createElement('div');
       row.className = `lex-order-item ${item.source ? '' : 'local'}`;
-      row.textContent = `${i + 1}. ${item.label}${item.source ? '' : ' · lokaal'}`;
+      row.textContent = `${i + 1}. ${item.label}${item.role ? ' · ' + item.role : ''}${item.source ? '' : ' · lokaal'}`;
       els.lexOrderList.appendChild(row);
     });
     fillEdgeList();
@@ -909,7 +1003,7 @@
       central_opn: state.centerMode,
       functional_order: state.functionalOrder,
       invariant_tree: ['S -> NP VP', 'VP -> NP V', 'V -> BIJT'],
-      lex: state.example.lexItems
+      lex: activeLexItems()
     };
     download(`${state.example.id}.${VERSION}.json`, JSON.stringify(payload, null, 2));
   }
@@ -921,8 +1015,8 @@
       'tree:',
       '  S -> NP VP',
       '  VP -> NP V',
-      '  V -> BIJT',
-      `lex: ${state.example.lexItems.map(i => i.label).join(' ')}`,
+      `  V -> ${roleLabels().predicate}`,
+      `lex: ${activeSentenceText()}`,
       `lex_rule: ${state.example.lexRule}`,
       `functional_order: ${state.functionalOrder}`
     ];
@@ -938,6 +1032,7 @@
     });
     els.exampleSelect?.addEventListener('change', event => {
       state.example = EXAMPLES.find(e => e.id === event.target.value) || EXAMPLES[0];
+      state.roleSwap = false;
       state.selectedNodeId = null;
       render();
     });
@@ -950,8 +1045,9 @@
       render();
     });
     els.lexRuleSelect?.addEventListener('change', event => {
-      const targetExample = event.target.value === 'bijzin-omdat' ? EXAMPLES[1] : EXAMPLES[0];
+      const targetExample = event.target.value === 'bijzin-omdat' ? (EXAMPLES.find(e => e.lexRule === 'bijzin-omdat') || EXAMPLES[1]) : (EXAMPLES.find(e => e.lexRule === 'hoofdzininvariant') || EXAMPLES[0]);
       state.example = targetExample;
+      state.roleSwap = false;
       render();
     });
     els.showGridInput?.addEventListener('change', event => { state.showGrid = event.target.checked; render(); });
@@ -962,7 +1058,11 @@
     els.downloadJsonButton?.addEventListener('click', downloadJson);
     els.downloadOpnButton?.addEventListener('click', downloadOpn);
     els.applyLexRuleButton?.addEventListener('click', () => {
-      state.example = state.example.lexRule === 'bijzin-omdat' ? EXAMPLES[1] : EXAMPLES[0];
+      state.example = state.example.lexRule === 'bijzin-omdat' ? (EXAMPLES.find(e => e.lexRule === 'bijzin-omdat') || EXAMPLES[1]) : (EXAMPLES.find(e => e.lexRule === 'hoofdzininvariant') || EXAMPLES[0]);
+      render();
+    });
+    els.swapRolesButton?.addEventListener('click', () => {
+      state.roleSwap = !state.roleSwap;
       render();
     });
     for (const button of [els.undoButton, els.redoButton, els.addNodeButton, els.duplicateNodeButton, els.deleteNodeButton, els.applyNodeButton, els.addEdgeButton, els.lexLeftButton, els.lexRightButton]) {
@@ -980,11 +1080,12 @@
     });
   }
 
-  function init() {
+  async function init() {
     registerEvents();
+    await loadExamplesFromHtml();
     render();
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js?v4386').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v4388').catch(() => {});
     }
   }
 

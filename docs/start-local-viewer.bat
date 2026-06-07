@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo.
-echo OpenGraph Lite Viewer v4360
+echo OpenGraph Lite Viewer v4388
 echo.
 echo Start lokale server op http://localhost:8088
 echo Gebruik 8088. Herlaad hard als een oude PWA-cache nog actief is.
