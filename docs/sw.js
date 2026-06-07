@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opengraph-lite-viewer-v4388';
+const CACHE_NAME = 'opengraph-lite-viewer-v4394';
 
 const ASSETS = [
   './',
@@ -6,6 +6,10 @@ const ASSETS = [
   './styles.css',
   './viewer.js',
   './examples-input.html',
+  './examples-editor.html',
+  './structure-editor.html',
+  './structure-config.html',
+  './lexicon-config.html',
   './favicon.ico',
   './manifest.webmanifest',
   './icons/icon-192.svg',

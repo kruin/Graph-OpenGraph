@@ -607,7 +607,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 
-/* v4388: OPN topicalization/fronting slot inside syntax and functional sources. */
+/* v4394: OPN topicalization/fronting slot inside syntax and functional sources. */
 .opn-topicalization-slot {
   fill: #ecfeff;
   stroke: #0891b2;
@@ -632,7 +632,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   fill: #0e7490;
 }
 
-/* v4388: example sentences are readable HTML-input; strong=subject, em=object. */
+/* v4394: example sentences are readable HTML-input; strong=subject, em=object. */
 .input-sentence-tools {
   display: flex;
   align-items: flex-end;

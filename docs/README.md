@@ -1,4 +1,4 @@
-# OpenGraph Lite Viewer — PWA v4388
+# OpenGraph Lite Viewer — PWA v4394
 
 Browser-native proefversie van **OpenGraphEd Lite** voor **JAN — Open Notation**.
 
@@ -93,17 +93,17 @@ Gebruik na updates zo nodig `Ctrl+F5` of verwijder de oude service worker.
 4. Open `Assen` en controleer dat LEX apart blijft.
 5. Kies `OMDAT DE HOND DE MAN BIJT` en controleer dat alleen de LEX-as verandert.
 
-## v4388-correctie functioneel
+## v4394-correctie functioneel
 
 `OPN · functionele structuur` tekent nu zichtbaar `CLAUSE > AGENS/PRED/PATIENS`. `BIJT` is alleen de leaf onder `PRED` en mag dus niet meer als centrale root van een driehoek verschijnen.
 
-## v4388-noot
+## v4394-noot
 
 De header/subtitel is bewust gelijk gehouden: **Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.**  
-Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4388` en `styles.css?v4388`.
+Om te voorkomen dat de browser alleen `index.html` vernieuwt maar een oude `viewer.js` houdt, laadt `index.html` nu `viewer.js?v4394` en `styles.css?v4394`.
 
 
-## v4388 — OPN-slot voor vooropplaatsing
+## v4394 — OPN-slot voor vooropplaatsing
 
 De OPN-bronnen reserveren nu expliciet een plaats voor vooropplaatsing/topicalisatie:
 
@@ -115,7 +115,7 @@ De OPN-bronnen reserveren nu expliciet een plaats voor vooropplaatsing/topicalis
 De functionele structuur heeft daarmee, net als de syntaxboom, een eigen LEX-projectie. De functionele structuur blijft n-ary en gebruikt de config `left-first` / `right-first` voor de vrije role-boxplaatsing.
 
 
-## v4388 — voorbeeldzinnen als HTML-input
+## v4394 — voorbeeldzinnen als HTML-input
 
 De actieve voorbeeldzinnen staan nu ook in `examples-input.html`.
 
@@ -130,3 +130,103 @@ Actieve beginvoorbeelden:
 <strong>HOND</strong> BIJT <em>MAN</em>
 OMDAT DE <strong>HOND</strong> DE <em>MAN</em> BIJT
 ```
+
+## v4394 — voorbeeldzinnen-editor
+
+Toegevoegd:
+
+```text
+examples-editor.html
+```
+
+Functie:
+
+- voorbeelden toevoegen;
+- voorbeelden verwijderen;
+- voorbeeld kopiëren;
+- tokens bewerken;
+- subject/object markeren;
+- subject/object-vulling wisselen;
+- LEX-regel kiezen;
+- source/slot per token instellen;
+- `examples-input.html` downloaden of via Chrome/Edge opslaan als HTML.
+
+Conventie blijft:
+
+```html
+<strong>SUBJECT</strong>
+<em>OBJECT</em>
+```
+
+De viewer leest `examples-input.html` bij start. Na wijziging via de editor: download de nieuwe `examples-input.html`, vervang het bestand in de viewer-map en herlaad de viewer hard met `Ctrl+F5`.
+
+
+## v4394 — structure-config als eerste stap
+
+De werkwijze is aangescherpt:
+
+1. Bewerk eerst `structure-config.html` via `structure-editor.html`.
+2. De syntax-config bevat **geen lexicale woorden** meer. Zij bevat alleen abstracte structurele posities/projectiebronnen.
+3. Lexicale woorden zoals `hond`, `man`, `vrouw`, `trui`, `bijt` en `breit` staan uitsluitend in `lexicon-config.html` en in de voorbeeldzinnen.
+
+Correct basispatroon:
+
+```text
+s:S [cat=S] -> np-subj vp
+np-subj:NP [cat=NP] -> subj
+subj:{subject} [leaf role=subject source=subject cat=N]
+vp:VP [cat=VP] -> np-obj v
+np-obj:NP [cat=NP] -> obj
+obj:{object} [leaf role=object source=object cat=N]
+v:V [cat=V] -> pred
+pred:{predicate} [leaf role=predicate source=predicate cat=V]
+```
+
+Functioneel idem: n-ary role-boxes met dezelfde abstracte sources `subject`, `predicate` en `object`.
+
+De knop `Voorbeeld VP: NP-VP / VP: pv-VDW` maakt een nieuwe VP-regelset met structurele posities `pv` en `vdw`; dat zijn dus geen lexicale items.
+
+## v4394 — bescheiden lexicon
+
+Er is nu een aparte lexiconbron toegevoegd:
+
+```text
+lexicon-config.html
+```
+
+De voorbeeldzinnen-editor gebruikt dit lexicon voor de zichtbare woordvulling. De structure-config blijft verantwoordelijk voor de boomstructuur en de projectiebronnen.
+
+Startlexicon:
+
+- NP/N: `man`, `hond`, `kat`, `vrouw`, `trui`
+- V: `bijt(en)`, `brei(en)`
+- AUX: `heeft`, `hebben`, `is`
+- DET: `de`, `het`, `een`
+- COMP: `omdat`, `dat`
+
+De editor houdt daarom twee lagen uit elkaar:
+
+```text
+lexeme = zichtbaar woord
+source  = structurele projectiebron
+```
+
+Voorbeeld: `VROUW` kan als subject zichtbaar zijn, maar blijft projecteren naar de structurele subjectbron.
+
+## v4394 — perfectumregel
+
+Toegevoegd aan de structure-laag:
+
+```text
+vp:VP [cat=VP] -> np-obj vp-perfectum
+vp-perfectum:VP [cat=VP] -> pv vdw
+pv:{pv} [leaf role=aux source=pv cat=AUX]
+vdw:{vdw} [leaf role=participle source=vdw cat=V]
+```
+
+Deze regel beschrijft het perfectum `heeft gebeten` structureel als twee projectiebronnen:
+
+- `pv` = persoonsvorm / hulpwerkwoord, bijvoorbeeld `HEEFT`
+- `vdw` = voltooid deelwoord, bijvoorbeeld `GEBETEN`
+
+De lexicale woorden blijven in `lexicon-config.html`; de structure-config bevat alleen posities en bronnen. De voorbeeldzinnen-editor heeft een nieuw patroon `perfectum: Det S HEEFT Det O VDW`.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OpenGraph voorbeeldzinnen input v4388</title>
+  <title>OpenGraph voorbeeldzinnen input v4394</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, sans-serif; color: #0f172a; background: #f8fafc; }
     body { margin: 0; padding: 24px; }
@@ -18,39 +18,78 @@
     .lex-sequence { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 10px 0; }
     .lex-token { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 999px; padding: 6px 10px; font-weight: 700; }
     .lex-token.local { border-style: dashed; color: #9a3412; }
-    button { border: 1px solid #94a3b8; background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 800; cursor: pointer; }
-    code { background: #e2e8f0; border-radius: 6px; padding: 2px 5px; }
+    button, .button-link { border: 1px solid #94a3b8; background: #fff; border-radius: 10px; padding: 8px 12px; font-weight: 800; cursor: pointer; color: #0f172a; text-decoration: none; display: inline-flex; }
   </style>
 </head>
 <body>
   <main>
     <h1>OpenGraph voorbeeldzinnen · HTML-input</h1>
-    <p class="note">Deze file is de leesbare inputbron voor voorbeeldzinnen. <strong>Vet</strong> markeert het gekozen subject; <em>cursief</em> markeert het gekozen object. De knop wisselt alleen de zichtbare subject/object-vulling; de grammaticale positie blijft gemarkeerd door vet/cursief.</p>
-
+    <p class="note">Deze file is de leesbare inputbron voor voorbeeldzinnen. <strong>Vet</strong> markeert subject; <em>cursief</em> markeert object. De lexicale vulling komt uit <a class="button-link" href="lexicon-config.html">lexicon-config.html</a>. Bewerk via <a class="button-link" href="examples-editor.html">examples-editor.html</a>.</p>
     <section id="opengraph-example-input" aria-label="Voorbeeldzinnen">
       <article class="example-input" data-id="hond-bijt-man" data-phase="Fase 1+2" data-lex-rule="hoofdzininvariant" data-predicate="BIJT">
-        <p class="sentence" title="Vet = subject; cursief = object. Gebruik de knop ‘Wissel S/O’ om de vulling te wisselen."><strong data-role="subject">HOND</strong> BIJT <em data-role="object">MAN</em></p>
-        <p class="meta">hoofdzin · centrale boom invariant · subject/object gekozen voor eerste test</p>
+        <p class="sentence" title="Vet = subject; cursief = object"><strong data-role="subject">HOND</strong> BIJT <em data-role="object">MAN</em></p>
+        <p class="meta">hoofdzin · centrale boom invariant</p>
         <ol class="lex-sequence" aria-label="LEX-volgorde">
-          <li class="lex-token" data-id="hond" data-source="hond" data-role="subject"><strong>HOND</strong></li>
-          <li class="lex-token" data-id="bijt" data-source="bijt" data-role="predicate">BIJT</li>
-          <li class="lex-token" data-id="man" data-source="man" data-role="object"><em>MAN</em></li>
+          <li class="lex-token" data-id="subject-hond" data-source="subject" data-role="subject" data-lexeme="hond"><strong data-role="subject">HOND</strong></li>
+          <li class="lex-token" data-id="pred-bijt" data-source="predicate" data-role="predicate" data-lexeme="bijt">BIJT</li>
+          <li class="lex-token" data-id="object-man" data-source="object" data-role="object" data-lexeme="man"><em data-role="object">MAN</em></li>
         </ol>
-        <button type="button" class="swap-demo" title="Wissel de subject- en objectvulling. Vet blijft subject; cursief blijft object.">Wissel S/O</button>
+        <button type="button" class="swap-demo">Wissel S/O</button>
       </article>
 
       <article class="example-input" data-id="omdat-de-hond-de-man-bijt" data-phase="Fase 3" data-lex-rule="bijzin-omdat" data-predicate="BIJT">
-        <p class="sentence" title="Vet = subject; cursief = object. Gebruik de knop ‘Wissel S/O’ om de vulling te wisselen.">OMDAT DE <strong data-role="subject">HOND</strong> DE <em data-role="object">MAN</em> BIJT</p>
+        <p class="sentence" title="Vet = subject; cursief = object">OMDAT DE <strong data-role="subject">HOND</strong> DE <em data-role="object">MAN</em> BIJT</p>
         <p class="meta">bijzin · Comp/(om)dat in LEX-slot 0 · centrale boom invariant</p>
         <ol class="lex-sequence" aria-label="LEX-volgorde">
-          <li class="lex-token local" data-id="omdat" data-slot="comp">OMDAT</li>
-          <li class="lex-token local" data-id="de-subj" data-slot="det-subj">DE</li>
-          <li class="lex-token" data-id="hond" data-source="hond" data-role="subject"><strong>HOND</strong></li>
-          <li class="lex-token local" data-id="de-obj" data-slot="det-obj">DE</li>
-          <li class="lex-token" data-id="man" data-source="man" data-role="object"><em>MAN</em></li>
-          <li class="lex-token" data-id="bijt" data-source="bijt" data-role="predicate">BIJT</li>
+          <li class="lex-token local" data-id="omdat" data-slot="comp" data-lexeme="omdat">OMDAT</li>
+          <li class="lex-token local" data-id="de-det-subj" data-slot="det-subj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="subject-hond" data-source="subject" data-role="subject" data-lexeme="hond"><strong data-role="subject">HOND</strong></li>
+          <li class="lex-token local" data-id="de-det-obj" data-slot="det-obj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="object-man" data-source="object" data-role="object" data-lexeme="man"><em data-role="object">MAN</em></li>
+          <li class="lex-token" data-id="pred-bijt" data-source="predicate" data-role="predicate" data-lexeme="bijt">BIJT</li>
         </ol>
-        <button type="button" class="swap-demo" title="Wissel de subject- en objectvulling. Vet blijft subject; cursief blijft object.">Wissel S/O</button>
+        <button type="button" class="swap-demo">Wissel S/O</button>
+      </article>
+
+      <article class="example-input" data-id="de-vrouw-breit-de-trui" data-phase="Lexicon-test" data-lex-rule="hoofdzininvariant" data-predicate="BREIT">
+        <p class="sentence" title="Vet = subject; cursief = object">DE <strong data-role="subject">VROUW</strong> BREIT DE <em data-role="object">TRUI</em></p>
+        <p class="meta">hoofdzin · determinatoren lokaal op LEX · centrale boom invariant</p>
+        <ol class="lex-sequence" aria-label="LEX-volgorde">
+          <li class="lex-token local" data-id="de-det-subj" data-slot="det-subj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="subject-vrouw" data-source="subject" data-role="subject" data-lexeme="vrouw"><strong data-role="subject">VROUW</strong></li>
+          <li class="lex-token" data-id="pred-breit" data-source="predicate" data-role="predicate" data-lexeme="breit">BREIT</li>
+          <li class="lex-token local" data-id="de-det-obj" data-slot="det-obj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="object-trui" data-source="object" data-role="object" data-lexeme="trui"><em data-role="object">TRUI</em></li>
+        </ol>
+        <button type="button" class="swap-demo">Wissel S/O</button>
+      </article>
+
+      <article class="example-input" data-id="omdat-de-vrouw-de-trui-breit" data-phase="Lexicon-test" data-lex-rule="bijzin-omdat" data-predicate="BREIT">
+        <p class="sentence" title="Vet = subject; cursief = object">OMDAT DE <strong data-role="subject">VROUW</strong> DE <em data-role="object">TRUI</em> BREIT</p>
+        <p class="meta">bijzin · lexicon-vulling · Comp/(om)dat in LEX-slot 0</p>
+        <ol class="lex-sequence" aria-label="LEX-volgorde">
+          <li class="lex-token local" data-id="omdat" data-slot="comp" data-lexeme="omdat">OMDAT</li>
+          <li class="lex-token local" data-id="de-det-subj" data-slot="det-subj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="subject-vrouw" data-source="subject" data-role="subject" data-lexeme="vrouw"><strong data-role="subject">VROUW</strong></li>
+          <li class="lex-token local" data-id="de-det-obj" data-slot="det-obj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="object-trui" data-source="object" data-role="object" data-lexeme="trui"><em data-role="object">TRUI</em></li>
+          <li class="lex-token" data-id="pred-breit" data-source="predicate" data-role="predicate" data-lexeme="breit">BREIT</li>
+        </ol>
+        <button type="button" class="swap-demo">Wissel S/O</button>
+      </article>
+
+      <article class="example-input" data-id="de-hond-heeft-de-man-gebeten" data-phase="Perfectum" data-lex-rule="perfectum-heeft-vdw" data-predicate="GEBETEN">
+        <p class="sentence" title="Vet = subject; cursief = object">DE <strong data-role="subject">HOND</strong> HEEFT DE <em data-role="object">MAN</em> GEBETEN</p>
+        <p class="meta">perfectum · structure-regel VP → NP VP; VP → pv VDW · pv=HEEFT, vdw=GEBETEN</p>
+        <ol class="lex-sequence" aria-label="LEX-volgorde">
+          <li class="lex-token local" data-id="de-det-subj" data-slot="det-subj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="subject-hond" data-source="subject" data-role="subject" data-lexeme="hond"><strong data-role="subject">HOND</strong></li>
+          <li class="lex-token" data-id="pv-heeft" data-source="pv" data-role="aux" data-lexeme="heeft">HEEFT</li>
+          <li class="lex-token local" data-id="de-det-obj" data-slot="det-obj" data-lexeme="de">DE</li>
+          <li class="lex-token" data-id="object-man" data-source="object" data-role="object" data-lexeme="man"><em data-role="object">MAN</em></li>
+          <li class="lex-token" data-id="vdw-bijt" data-source="vdw" data-role="participle" data-lexeme="bijt">GEBETEN</li>
+        </ol>
+        <button type="button" class="swap-demo">Wissel S/O</button>
       </article>
     </section>
   </main>
@@ -61,12 +100,11 @@
       const subjectToken = card.querySelector('.lex-token[data-role="subject"]');
       const objectToken = card.querySelector('.lex-token[data-role="object"]');
       card.querySelector('.swap-demo')?.addEventListener('click', () => {
-        const s = subject.textContent;
-        const o = object.textContent;
-        subject.textContent = o;
-        object.textContent = s;
-        if (subjectToken) subjectToken.innerHTML = '<strong>' + o + '</strong>';
-        if (objectToken) objectToken.innerHTML = '<em>' + s + '</em>';
+        const s = subject?.textContent || ''; const o = object?.textContent || '';
+        if (!subject || !object) return;
+        subject.textContent = o; object.textContent = s;
+        if (subjectToken) subjectToken.innerHTML = '<strong data-role="subject">' + o + '</strong>';
+        if (objectToken) objectToken.innerHTML = '<em data-role="object">' + s + '</em>';
       });
     });
   </script>

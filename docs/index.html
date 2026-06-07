@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="OpenGraph Lite Viewer: vrije JAN-bronknopen, edits, LEX-plaatsingsregels en projecties.">
-  <title>OpenGraph Lite Viewer v4388</title>
+  <title>OpenGraph Lite Viewer v4394</title>
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v4388">
+  <link rel="stylesheet" href="styles.css?v4394">
 </head>
 <body>
   <header class="app-header">
     <div>
       <div class="eyebrow">OpenGraph · JAN · Open Notation</div>
-      <h1>OpenGraph Lite Viewer <span class="version-tag">v4388</span></h1>
+      <h1>OpenGraph Lite Viewer <span class="version-tag">v4394</span></h1>
       <p class="header-subtitle">Redesign: eerst syntax-tree, daarna LEX-projectie, daarna lokale LEX-regel.</p>
     </div>
     <button id="installButton" class="ghost hidden" type="button">Installeer</button>
@@ -29,6 +29,9 @@
       </label>
       <div class="input-sentence-tools" aria-label="Zin-input">
         <a class="button-link" href="examples-input.html" title="Open de HTML-inputfile met voorbeeldzinnen, subject vet en object cursief">HTML-input</a>
+        <a class="button-link" href="examples-editor.html" title="Gebruiksvriendelijke editor voor voorbeeldzinnen: toevoegen, verwijderen, subject/object wijzigen en HTML downloaden">Voorbeeldeditor</a>
+        <a class="button-link" href="lexicon-config.html" title="Bescheiden lexicon voor voorbeeldzinnen">Lexicon</a>
+        <a class="button-link" href="structure-editor.html" title="Bewerk eerst syntax-config en functional-config">Structure-editor</a>
         <button id="swapRolesButton" type="button" title="Wissel de gekozen subject- en objectvulling. Vet blijft subject; cursief blijft object.">Wissel S/O</button>
       </div>
       <div class="button-row compact-actions">
@@ -50,7 +53,7 @@
 
     <section class="intro-panel" aria-label="Introductie">
       <div class="intro-kicker">Redesign · boom eerst</div>
-      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken de LEX-projectie horizontaal vanaf de centrale boom naar de LEX-as. Beide OPN-bronnen reserveren daarbij <strong>slot 1</strong> voor vooropplaatsing/topicalisatie tussen beginknoop en boom. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd. Voorbeeldzinnen staan nu ook in <code>examples-input.html</code>: <strong>vet</strong> markeert subject, <em>cursief</em> markeert object.</p>
+      <p><strong>Fase 1</strong>: maak eerst de centrale boom voor <strong>HOND BIJT MAN</strong>. <strong>Fase 2</strong>: teken de LEX-projectie horizontaal vanaf de centrale boom naar de LEX-as. Beide OPN-bronnen reserveren daarbij <strong>slot 1</strong> voor vooropplaatsing/topicalisatie tussen beginknoop en boom. <strong>Fase 3</strong>: regel lokaal op de LEX-as het uitingtype <strong>OMDAT DE HOND DE MAN BIJT</strong>. De centrale boom blijft daarbij onveranderd. Structuren staan in <code>structure-config.html</code>: eerst syntax-config en functional-config, daarna voorbeeldzinnen. Voorbeeldzinnen staan in <code>examples-input.html</code>: <strong>vet</strong> markeert subject, <em>cursief</em> markeert object. Lexicale vulling komt uit <code>lexicon-config.html</code>. Bewerk structuren via <code>structure-editor.html</code> en zinnen via <code>examples-editor.html</code>.</p>
     </section>
 
     <section class="status-panel" aria-live="polite">
@@ -144,11 +147,11 @@
       </details>
       <details>
         <summary>Bediening</summary>
-        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. De syntaxboom wordt bottom-up berekend: eerst leaf/subtree-boxen, daarna plaatsing, daarna renderen. Projecties worden horizontaal naar hun as getekend. De functionele structuur gebruikt dezelfde recursieve werkwijze, is n-ary, heeft ook een eigen LEX-projectie, reserveert slot 1 voor vooropplaatsing/topicalisatie en heeft een configkeuze <strong>left-first</strong>/<strong>right-first</strong>. <strong>Voorbeeld-input</strong>: <code>examples-input.html</code> bevat de zinnen met <strong>subject vet</strong> en <em>object cursief</em>. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel.</p>
+        <p><strong>OPN/Assen</strong>: kies centraal tussen OPN-syntaxboom en OPN-functionele structuur. De syntaxboom wordt uit <code>structure-config.html</code> gelezen en bottom-up berekend: eerst leaf/subtree-boxen, daarna plaatsing, daarna renderen. Projecties worden horizontaal naar hun as getekend. De functionele structuur gebruikt dezelfde recursieve werkwijze, is n-ary, heeft ook een eigen LEX-projectie, reserveert slot 1 voor vooropplaatsing/topicalisatie en heeft een configkeuze <strong>left-first</strong>/<strong>right-first</strong>. <strong>Voorbeeld-input</strong>: <code>examples-input.html</code> bevat de zinnen met <strong>subject vet</strong> en <em>object cursief</em>. <strong>LEX</strong>: gebruik de orderlijst of plaatsingsregel.</p>
       </details>
     </section>
   </main>
 
-  <script src="viewer.js?v4388" defer></script>
+  <script src="viewer.js?v4394" defer></script>
 </body>
 </html>
